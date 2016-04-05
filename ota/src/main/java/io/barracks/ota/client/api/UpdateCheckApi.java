@@ -14,15 +14,17 @@
  *    limitations under the License.
  */
 
-package io.barracks.ota.client.helper;
+package io.barracks.ota.client.api;
 
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.Header;
+import retrofit2.http.POST;
 
 /**
  * Created by saiimons on 16-04-05.
  */
-public interface UpdateCheckCallback {
-    void onCheckFinished(UpdateCheckResponse response);
-
-    void onCheckException(Throwable t);
+public interface UpdateCheckApi {
+    @POST("/ota/check_update")
+    Call<UpdateCheckResponse> checkUpdate(@Header("Authorization") String key, @Body UpdateCheckRequest request);
 }

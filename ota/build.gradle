@@ -19,6 +19,9 @@ android {
 }
 
 dependencies {
+    compile 'com.android.support:support-v4:23.2.1'
     compile 'com.squareup.retrofit2:retrofit:2.0.1'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.1'
+
     testCompile 'junit:junit:4.12'
 }

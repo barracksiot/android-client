@@ -22,7 +22,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import io.barracks.ota.client.UpdateCheckRequest;
+import io.barracks.ota.client.api.UpdateCheckRequest;
+import io.barracks.ota.client.api.UpdateCheckResponse;
 import io.barracks.ota.client.helper.UpdateCheckCallback;
 import io.barracks.ota.client.helper.UpdateCheckHelper;
 
@@ -41,18 +42,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         helper.requestUpdate(
-                                new UpdateCheckCallback() {
-                                    @Override
-                                    public void onCheckSuccess() {
-                                        Log.d(TAG, "Update check success");
-                                    }
-
-                                    @Override
-                                    public void onCheckFailed(Throwable t) {
-                                        Log.e(TAG, "Update check failed", t);
-                                    }
-                                },
-                                new UpdateCheckRequest("")
+                                new UpdateCheckRequest.Builder().build()
                         );
                     }
                 }
@@ -63,7 +53,21 @@ public class CheckUpdateActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         helper = new UpdateCheckHelper();
-        helper.bind(this);
+        helper.bind(this, new UpdateCheckCallback() {
+            @Override
+            public void onCheckFinished(UpdateCheckResponse response) {
+                if (response.isSuccess()) {
+                    Log.d(TAG, "Update check success " + response);
+                } else {
+                    Log.e(TAG, "Update check failed: " + response.getReason());
+                }
+            }
+
+            @Override
+            public void onCheckException(Throwable t) {
+                Log.e(TAG, "Update check failed", t);
+            }
+        });
     }
 
     @Override

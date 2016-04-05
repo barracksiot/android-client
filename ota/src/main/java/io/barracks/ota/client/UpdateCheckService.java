@@ -16,90 +16,65 @@
 
 package io.barracks.ota.client;
 
-import android.app.Service;
+import android.app.IntentService;
 import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
+import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 import android.util.Log;
 
-import java.lang.ref.WeakReference;
+import java.io.IOException;
 
-public class UpdateCheckService extends Service {
-    public static final int ACTION_CHECK = 0;
-    public static final String INTENT_ACTION_CHECK = "check_update";
+import io.barracks.ota.client.api.UpdateCheckApi;
+import io.barracks.ota.client.api.UpdateCheckRequest;
+import io.barracks.ota.client.api.UpdateCheckResponse;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
-    public static final int RESULT_FAILED = -1;
-    public static final int RESULT_SUCCESS = 1;
+public class UpdateCheckService extends IntentService {
+    public static final String ACTION_CHECK = "io.barracks.ota.client.CHECK_UPDATE";
+    public static final String EXTRA_REQUEST = "check_request";
 
-    public static final String DATA_EXCEPTION = "exception";
+    public static final String EXTRA_EXCEPTION = "exception";
+    public static final String EXTRA_RESPONSE = "response";
+    public static final String EXTRA_CALLBACK = "callback";
 
     private static final String TAG = UpdateCheckService.class.getSimpleName();
-    private final Handler messageHandler = new MessageHandler(this);
-    private final Messenger messenger = new Messenger(messageHandler);
 
     public UpdateCheckService() {
+        super(TAG);
     }
 
-    private static void sendMessage(Messenger messenger, Message msg) {
+    private void checkUpdate(UpdateCheckRequest request, int callback) {
+        Intent intent = new Intent(ACTION_CHECK);
+        intent.putExtra(EXTRA_CALLBACK, callback);
         try {
-            messenger.send(msg);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to send response", new Exception());
+            Log.d(TAG, "Checking for updates");
+            Retrofit retrofit = new Retrofit.Builder()
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .baseUrl(TextUtils.isEmpty(request.getBaseUrl()) ? "https://barracks.io/" : request.getBaseUrl())
+                    .build();
+            UpdateCheckApi api = retrofit.create(UpdateCheckApi.class);
+            Call<UpdateCheckResponse> call = api.checkUpdate(request.getApiKey(), request);
+            Response<UpdateCheckResponse> response = call.execute();
+            if (response.isSuccessful()) {
+                intent.putExtra(EXTRA_RESPONSE, response.body());
+            } else {
+                intent.putExtra(EXTRA_RESPONSE, UpdateCheckResponse.fromError(response.code() + " " + response.message()));
+            }
+        } catch (IOException e) {
+            intent.putExtra(UpdateCheckService.EXTRA_EXCEPTION, e);
         }
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    protected void onHandleIntent(Intent intent) {
         switch (intent.getAction()) {
-            case INTENT_ACTION_CHECK:
+            case ACTION_CHECK:
+                checkUpdate(intent.<UpdateCheckRequest>getParcelableExtra(EXTRA_REQUEST), intent.getIntExtra(EXTRA_CALLBACK, 0));
                 break;
         }
-        return super.onStartCommand(intent, flags, startId);
     }
-
-    private void checkUpdate(UpdateCheckRequest request) {
-        Log.d(TAG, "Checking for updates");
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return messenger.getBinder();
-    }
-
-    private static final class MessageHandler extends Handler {
-        private final WeakReference<UpdateCheckService> service;
-
-        private MessageHandler(UpdateCheckService service) {
-            this.service = new WeakReference<>(service);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            UpdateCheckService service = this.service.get();
-            if (service != null) {
-                switch (msg.what) {
-                    case ACTION_CHECK:
-                        service.checkUpdate((UpdateCheckRequest) msg.obj);
-                        Message response = obtainMessage(RESULT_SUCCESS);
-                        UpdateCheckService.sendMessage(msg.replyTo, response);
-                        break;
-                    default:
-                        Log.e(TAG, "Failed to handle message " + msg, new Exception());
-                        break;
-                }
-            } else {
-                Message response = obtainMessage(RESULT_FAILED);
-                Bundle extras = new Bundle();
-                extras.putSerializable(UpdateCheckService.DATA_EXCEPTION, new Exception("Unable to handle request"));
-                response.setData(extras);
-                UpdateCheckService.sendMessage(msg.replyTo, response);
-            }
-        }
-    }
-
-
 }
