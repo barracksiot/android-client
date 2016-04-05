@@ -20,8 +20,6 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.gson.annotations.SerializedName;
-
 /**
  * Created by saiimons on 16-04-05.
  */
@@ -41,23 +39,22 @@ public class UpdateCheckRequest implements Parcelable {
     private final transient String apiKey;
     private final transient String baseUrl;
 
-    @SerializedName("unitId")
-    private final String deviceId;
+    private final String unitId;
     private final String versionId;
     private final Bundle properties;
 
     protected UpdateCheckRequest(Parcel in) {
         apiKey = in.readString();
         baseUrl = in.readString();
-        deviceId = in.readString();
+        unitId = in.readString();
         versionId = in.readString();
         properties = in.readBundle();
     }
 
-    private UpdateCheckRequest(String apiKey, String baseUrl, String deviceId, String versionId, Bundle properties) {
+    private UpdateCheckRequest(String apiKey, String baseUrl, String unitId, String versionId, Bundle properties) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
-        this.deviceId = deviceId;
+        this.unitId = unitId;
         this.versionId = versionId;
         this.properties = properties;
     }
@@ -70,8 +67,8 @@ public class UpdateCheckRequest implements Parcelable {
         return baseUrl;
     }
 
-    public String getDeviceId() {
-        return deviceId;
+    public String getUnitId() {
+        return unitId;
     }
 
     public String getVersionId() {
@@ -91,7 +88,7 @@ public class UpdateCheckRequest implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(apiKey);
         dest.writeString(baseUrl);
-        dest.writeString(deviceId);
+        dest.writeString(unitId);
         dest.writeString(versionId);
         dest.writeBundle(properties);
     }
@@ -99,7 +96,7 @@ public class UpdateCheckRequest implements Parcelable {
     public static final class Builder {
         private String apiKey = null;
         private String baseUrl = null;
-        private String deviceId = null;
+        private String unitId = null;
         private String versionId = null;
         private Bundle properties = null;
 
@@ -117,8 +114,8 @@ public class UpdateCheckRequest implements Parcelable {
             return this;
         }
 
-        public Builder deviceId(String deviceId) {
-            this.deviceId = deviceId;
+        public Builder unitId(String unitId) {
+            this.unitId = unitId;
             return this;
         }
 
@@ -134,7 +131,7 @@ public class UpdateCheckRequest implements Parcelable {
 
         public UpdateCheckRequest build() {
             // TODO check here that everything is correct
-            return new UpdateCheckRequest(apiKey, baseUrl, deviceId, versionId, properties);
+            return new UpdateCheckRequest(apiKey, baseUrl, unitId, versionId, properties);
         }
     }
 }
