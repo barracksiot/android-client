@@ -1,1 +1,1 @@
-include ':ota'
+include ':ota', ':ota_sample'

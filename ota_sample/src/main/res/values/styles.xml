@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
   ~    Copyright 2016 Barracks Solutions Inc.
   ~
   ~    Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,15 +12,16 @@
   ~    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   ~    See the License for the specific language governing permissions and
   ~    limitations under the License.
--->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.barracks.client">
+  -->
 
-    <application>
-        <service
-            android:name="io.barracks.ota.client.UpdateCheckService"
-            android:enabled="true"
-            android:exported="false"></service>
-    </application>
+<resources>
 
-</manifest>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+</resources>

@@ -14,16 +14,30 @@
  *    limitations under the License.
  */
 
-package io.barracks.client;
+apply plugin: 'com.android.application'
 
-import android.app.Application;
-import android.test.ApplicationTestCase;
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
 
-/**
- * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
- */
-public class ApplicationTest extends ApplicationTestCase<Application> {
-    public ApplicationTest() {
-        super(Application.class);
+    defaultConfig {
+        applicationId "io.barracks.ota.sample"
+        minSdkVersion 9
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
     }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.2.1'
+    compile project(':ota')
 }

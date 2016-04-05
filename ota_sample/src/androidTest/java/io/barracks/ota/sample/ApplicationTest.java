@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.barracks.client;
+package io.barracks.ota.sample;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
