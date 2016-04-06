@@ -31,22 +31,13 @@ public class CheckUpdateActivity extends AppCompatActivity {
 
     private static final String TAG = CheckUpdateActivity.class.getSimpleName();
     private UpdateCheckHelper helper;
+    private Button check;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_update);
-        Button check = (Button) findViewById(R.id.btn_check);
-        check.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        helper.requestUpdate(
-                                new UpdateCheckRequest.Builder().build()
-                        );
-                    }
-                }
-        );
+        check = (Button) findViewById(R.id.btn_check);
     }
 
     @Override
@@ -68,6 +59,16 @@ public class CheckUpdateActivity extends AppCompatActivity {
                 Log.e(TAG, "Update check failed", t);
             }
         });
+        check.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        helper.requestUpdate(
+                                new UpdateCheckRequest.Builder().build()
+                        );
+                    }
+                }
+        );
     }
 
     @Override

@@ -108,4 +108,5 @@ public class UpdateCheckResponse implements Parcelable {
         dest.writeLong(size);
         dest.writeBundle(properties);
     }
+
 }

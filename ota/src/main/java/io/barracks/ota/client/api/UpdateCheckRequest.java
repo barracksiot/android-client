@@ -19,6 +19,7 @@ package io.barracks.ota.client.api;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 /**
  * Created by saiimons on 16-04-05.
@@ -130,7 +131,15 @@ public class UpdateCheckRequest implements Parcelable {
         }
 
         public UpdateCheckRequest build() {
-            // TODO check here that everything is correct
+            if (TextUtils.isEmpty(apiKey)) {
+                throw new IllegalStateException("API Key is required");
+            }
+            if (TextUtils.isEmpty(unitId)) {
+                throw new IllegalStateException("Unit ID is required");
+            }
+            if (TextUtils.isEmpty(versionId)) {
+                throw new IllegalStateException("Version ID is required");
+            }
             return new UpdateCheckRequest(apiKey, baseUrl, unitId, versionId, properties);
         }
     }

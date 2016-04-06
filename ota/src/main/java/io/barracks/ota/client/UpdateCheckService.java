@@ -22,8 +22,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 
-import java.io.IOException;
-
 import io.barracks.ota.client.api.UpdateCheckApi;
 import io.barracks.ota.client.api.UpdateCheckRequest;
 import io.barracks.ota.client.api.UpdateCheckResponse;
@@ -63,8 +61,8 @@ public class UpdateCheckService extends IntentService {
             } else {
                 intent.putExtra(EXTRA_RESPONSE, UpdateCheckResponse.fromError(response.code() + " " + response.message()));
             }
-        } catch (IOException e) {
-            intent.putExtra(UpdateCheckService.EXTRA_EXCEPTION, e);
+        } catch (Throwable t) {
+            intent.putExtra(UpdateCheckService.EXTRA_EXCEPTION, t);
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }

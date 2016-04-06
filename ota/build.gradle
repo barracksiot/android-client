@@ -1,4 +1,10 @@
 apply plugin: 'com.android.library'
+apply plugin: 'jacoco-android'
+
+
+repositories {
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+}
 
 android {
     compileSdkVersion 23
@@ -9,11 +15,15 @@ android {
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            testCoverageEnabled = true
         }
     }
 }
@@ -24,4 +34,6 @@ dependencies {
     compile 'com.squareup.retrofit2:converter-gson:2.0.1'
 
     testCompile 'junit:junit:4.12'
+    testCompile 'org.robolectric:robolectric:3.1-SNAPSHOT'
+    testCompile 'org.robolectric:shadows-support-v4:3.1-SNAPSHOT'
 }
