@@ -45,7 +45,7 @@ import static org.junit.Assert.assertTrue;
 public class UpdateCheckServiceTest {
     ServiceController<UpdateCheckService> controller;
     UpdateCheckService service;
-    private LocalBroadcastManager manager;
+    LocalBroadcastManager manager;
 
     @Before
     public void prepare() {
@@ -55,7 +55,7 @@ public class UpdateCheckServiceTest {
     }
 
     @Test
-    public void testCallbackRan() {
+    public void callbackRan() {
         CallbackCalledTest testCallback = new CallbackCalledTest();
         manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
         service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK));
@@ -64,7 +64,7 @@ public class UpdateCheckServiceTest {
     }
 
     @Test
-    public void testMissingParameters() {
+    public void missingParameters() {
         CallbackFailedTest testCallback = new CallbackFailedTest();
         manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
         service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK));
@@ -88,7 +88,7 @@ public class UpdateCheckServiceTest {
         }
     }
 
-    private final static class CallbackFailedTest extends BroadcastReceiver {
+    private static final class CallbackFailedTest extends BroadcastReceiver {
         boolean callbackFailed = false;
 
         @Override

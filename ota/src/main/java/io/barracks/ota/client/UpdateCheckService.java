@@ -18,13 +18,18 @@ package io.barracks.ota.client;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
@@ -32,6 +37,8 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 import io.barracks.ota.client.api.UpdateCheckApi;
 import io.barracks.ota.client.api.UpdateCheckRequest;
@@ -80,6 +87,17 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     }
 
     protected GsonBuilder setUpGsonBuilder(GsonBuilder builder) {
+        builder.setExclusionStrategies(new ExclusionStrategy() {
+            @Override
+            public boolean shouldSkipField(FieldAttributes f) {
+                return false;
+            }
+
+            @Override
+            public boolean shouldSkipClass(Class<?> clazz) {
+                return clazz == Bundle.class;
+            }
+        });
         return builder.registerTypeAdapterFactory(this);
     }
 
@@ -105,8 +123,8 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     }
 
     public static class DefaultResponseAdapter extends TypeAdapter<UpdateCheckResponse> {
-        protected final TypeAdapter<UpdateCheckResponse> delegate;
-        protected final TypeAdapter<JsonElement> elementAdapter;
+        private final TypeAdapter<UpdateCheckResponse> delegate;
+        private final TypeAdapter<JsonElement> elementAdapter;
 
         public DefaultResponseAdapter(TypeAdapterFactory factory, Gson gson, TypeToken<UpdateCheckResponse> type) {
             delegate = gson.getDelegateAdapter(factory, type);
@@ -114,15 +132,61 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         }
 
         @Override
-        public void write(JsonWriter out, UpdateCheckResponse value) throws IOException {
-            JsonElement tree = delegate.toJsonTree(value);
-            elementAdapter.write(out, tree);
+        public void write(JsonWriter out, UpdateCheckResponse response) throws IOException {
+            JsonElement tree = getDelegate().toJsonTree(response);
+            JsonObject properties = new JsonObject();
+            Set<String> keys = response.getProperties().keySet();
+            for (String key : keys) {
+                Object value = response.getProperties().get(key);
+                if (Boolean.class.isInstance(value)) {
+                    properties.addProperty(key, (Boolean) value);
+                } else if (String.class.isInstance(value)) {
+                    properties.addProperty(key, (String) value);
+                } else if (Number.class.isInstance(value)) {
+                    properties.addProperty(key, (Number) value);
+                }
+            }
+            tree.getAsJsonObject().add("properties", properties);
+            getElementAdapter().write(out, tree);
         }
 
         @Override
         public UpdateCheckResponse read(JsonReader in) throws IOException {
-            JsonElement tree = elementAdapter.read(in);
-            return delegate.fromJsonTree(tree);
+            JsonElement tree = getElementAdapter().read(in);
+            JsonObject obj = tree.getAsJsonObject();
+            UpdateCheckResponse response = getDelegate().fromJsonTree(tree);
+            JsonObject properties = obj.getAsJsonObject("properties");
+            if (properties != null) {
+                for (Map.Entry<String, JsonElement> entry : properties.entrySet()) {
+                    if (entry.getValue().isJsonPrimitive()) {
+                        JsonPrimitive primitive = entry.getValue().getAsJsonPrimitive();
+                        if (primitive.isBoolean()) {
+                            response.getProperties().putBoolean(entry.getKey(), primitive.getAsBoolean());
+                        } else if (primitive.isNumber()) {
+                            // This number is a LazilyParsedNumber, aka a String, we have to check wether it has a floating
+                            Number num = primitive.getAsNumber();
+                            try {
+                                long longVal = Long.parseLong(num.toString());
+                                response.getProperties().putLong(entry.getKey(), longVal);
+                            } catch (NumberFormatException e) {
+                                double dVal = Double.parseDouble(num.toString());
+                                response.getProperties().putDouble(entry.getKey(), dVal);
+                            }
+                        } else if (primitive.isString()) {
+                            response.getProperties().putString(entry.getKey(), primitive.getAsString());
+                        }
+                    }
+                }
+            }
+            return response;
+        }
+
+        public TypeAdapter<UpdateCheckResponse> getDelegate() {
+            return delegate;
+        }
+
+        public TypeAdapter<JsonElement> getElementAdapter() {
+            return elementAdapter;
         }
     }
 }

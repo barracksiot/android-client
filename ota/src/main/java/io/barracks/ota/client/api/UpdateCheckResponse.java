@@ -42,7 +42,7 @@ public class UpdateCheckResponse implements Parcelable {
     private String url;
     private String hash;
     private Long size;
-    private Bundle properties;
+    private Bundle properties = new Bundle();
 
     private UpdateCheckResponse() {
 

@@ -43,6 +43,16 @@ import io.barracks.client.ota.BuildConfig;
 @Config(constants = BuildConfig.class, sdk = 23)
 public class UpdateCheckResponseTest {
 
+    public static void assertValues(UpdateCheckResponse response) {
+        Assert.assertNotNull(response);
+        Assert.assertTrue(response.isSuccess());
+        Assert.assertTrue(TextUtils.isEmpty(response.getReason()));
+        Assert.assertTrue("42".equals(response.getVersionId()));
+        Assert.assertTrue("http://barracks.io/".equals(response.getUrl()));
+        Assert.assertTrue("deadbeef".equals(response.getHash()));
+        Assert.assertEquals(21432144324324322l, response.getSize().longValue());
+    }
+
     private UpdateCheckResponse parseFromResources() throws IOException {
         Gson gson = new GsonBuilder()
                 .setExclusionStrategies(
@@ -62,16 +72,6 @@ public class UpdateCheckResponseTest {
         ClassLoader.getSystemResource("update_check_response_success.json");
         File f = new File(ClassLoader.getSystemResource("update_check_response_success.json").getPath());
         return gson.fromJson(new FileReader(f), UpdateCheckResponse.class);
-    }
-
-    private void assertValues(UpdateCheckResponse response) {
-        Assert.assertNotNull(response);
-        Assert.assertTrue(response.isSuccess());
-        Assert.assertTrue(TextUtils.isEmpty(response.getReason()));
-        Assert.assertTrue("42".equals(response.getVersionId()));
-        Assert.assertTrue("http://barracks.io/".equals(response.getUrl()));
-        Assert.assertTrue("deadbeef".equals(response.getHash()));
-        Assert.assertEquals(21432144324324322l, response.getSize().longValue());
     }
 
     @Test
