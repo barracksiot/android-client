@@ -23,6 +23,7 @@ import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,8 +33,18 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ServiceController;
 
-import io.barracks.client.ota.BuildConfig;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
+import io.barracks.client.ota.BuildConfig;
+import io.barracks.ota.client.api.UpdateCheckRequest;
+import io.barracks.ota.client.api.UpdateCheckResponse;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 
@@ -56,20 +67,98 @@ public class UpdateCheckServiceTest {
 
     @Test
     public void callbackRan() {
-        CallbackCalledTest testCallback = new CallbackCalledTest();
+        CallbackCalled testCallback = new CallbackCalled();
         manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
         service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK));
         manager.unregisterReceiver(testCallback);
-        assertTrue(testCallback.callbackRan);
+        assertTrue(testCallback.called);
     }
 
     @Test
     public void missingParameters() {
-        CallbackFailedTest testCallback = new CallbackFailedTest();
+        CallbackFailed testCallback = new CallbackFailed();
         manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
         service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK));
         manager.unregisterReceiver(testCallback);
-        assertTrue(testCallback.callbackFailed);
+        assertTrue(testCallback.failed);
+    }
+
+    @Test
+    public void positiveResponse() throws IOException {
+        File f = new File(ClassLoader.getSystemResource("update_check_response_success.json").getPath());
+        BufferedReader reader = new BufferedReader(new FileReader(f));
+        StringBuilder stringBuilder = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            stringBuilder.append(line);
+        }
+        reader.close();
+        MockWebServer server = new MockWebServer();
+        server.enqueue(
+                new MockResponse()
+                        .addHeader("Content-Type", "application/json; charset=utf-8")
+                        .addHeader("Cache-Control", "no-cache")
+                        .setResponseCode(200)
+                        .setBody(stringBuilder.toString())
+        );
+
+        CallbackSuccess testCallback = new CallbackSuccess();
+        manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
+        UpdateCheckRequest request = new UpdateCheckRequest.Builder()
+                .apiKey("123456789abcdef")
+                .baseUrl(server.url("/").toString())
+                .unitId("12")
+                .versionId("v0.1")
+                .build();
+        service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK).putExtra(UpdateCheckService.EXTRA_REQUEST, request));
+        manager.unregisterReceiver(testCallback);
+        assertNotNull(testCallback.response);
+        Assert.assertTrue(testCallback.called);
+    }
+
+    @Test
+    public void noUpdateResponse() {
+        MockWebServer server = new MockWebServer();
+        server.enqueue(
+                new MockResponse()
+                        .addHeader("Content-Type", "application/json; charset=utf-8")
+                        .addHeader("Cache-Control", "no-cache")
+                        .setStatus("HTTP/1.1 204 No content")
+        );
+        CallbackSuccess testCallback = new CallbackSuccess();
+        manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
+        UpdateCheckRequest request = new UpdateCheckRequest.Builder()
+                .apiKey("123456789abcdef")
+                .baseUrl(server.url("/").toString())
+                .unitId("12")
+                .versionId("v0.1")
+                .build();
+        service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK).putExtra(UpdateCheckService.EXTRA_REQUEST, request));
+        manager.unregisterReceiver(testCallback);
+        Assert.assertNull(testCallback.response);
+        Assert.assertTrue(testCallback.called);
+    }
+
+    @Test
+    public void errorResponse() {
+        MockWebServer server = new MockWebServer();
+        server.enqueue(
+                new MockResponse()
+                        .addHeader("Content-Type", "application/json; charset=utf-8")
+                        .addHeader("Cache-Control", "no-cache")
+                        .setResponseCode(500)
+        );
+        CallbackFailed testCallback = new CallbackFailed();
+        manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
+        UpdateCheckRequest request = new UpdateCheckRequest.Builder()
+                .apiKey("123456789abcdef")
+                .baseUrl(server.url("/").toString())
+                .unitId("12")
+                .versionId("v0.1")
+                .build();
+        service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK).putExtra(UpdateCheckService.EXTRA_REQUEST, request));
+        manager.unregisterReceiver(testCallback);
+        Assert.assertTrue(testCallback.failed);
     }
 
     @After
@@ -77,24 +166,47 @@ public class UpdateCheckServiceTest {
         controller.destroy();
     }
 
-    private final static class CallbackCalledTest extends BroadcastReceiver {
-        boolean callbackRan = false;
+    private static final class CallbackCalled extends BroadcastReceiver {
+        boolean called = false;
 
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(UpdateCheckService.ACTION_CHECK)) {
-                callbackRan = true;
+                called = true;
             }
         }
     }
 
-    private static final class CallbackFailedTest extends BroadcastReceiver {
-        boolean callbackFailed = false;
+    private static final class CallbackFailed extends BroadcastReceiver {
+        boolean failed = false;
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(UpdateCheckService.ACTION_CHECK) && intent.hasExtra(UpdateCheckService.EXTRA_EXCEPTION)) {
-                callbackFailed = true;
+            if (
+                    intent.getAction().equals(UpdateCheckService.ACTION_CHECK)
+                            && intent.hasCategory(UpdateCheckService.UPDATE_REQUEST_ERROR)
+                            && intent.hasExtra(UpdateCheckService.EXTRA_EXCEPTION)
+                    ) {
+                failed = true;
+            }
+        }
+    }
+
+    private static final class CallbackSuccess extends BroadcastReceiver {
+        UpdateCheckResponse response = null;
+        boolean called = false;
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (
+                    intent.getAction().equals(UpdateCheckService.ACTION_CHECK) &&
+                            (
+                                    (intent.hasCategory(UpdateCheckService.UPDATE_AVAILABLE) && intent.hasExtra(UpdateCheckService.EXTRA_RESPONSE)) ||
+                                            intent.hasCategory(UpdateCheckService.UPDATE_UNAVAILABLE)
+                            )
+                    ) {
+                response = intent.getParcelableExtra(UpdateCheckService.EXTRA_RESPONSE);
+                called = true;
             }
         }
     }

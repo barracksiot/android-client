@@ -52,6 +52,10 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     public static final String ACTION_CHECK = "io.barracks.ota.client.CHECK_UPDATE";
     public static final String EXTRA_REQUEST = "check_request";
 
+    public static final String UPDATE_AVAILABLE = "io.barracks.ota.client.UPDATE_AVAILABLE";
+    public static final String UPDATE_UNAVAILABLE = "io.barracks.ota.client.update_available.UPDATE_UNAVAILABLE";
+    public static final String UPDATE_REQUEST_ERROR = "io.barracks.ota.client.update_available.UPDATE_REQUEST_ERROR";
+
     public static final String EXTRA_EXCEPTION = "exception";
     public static final String EXTRA_RESPONSE = "response";
     public static final String EXTRA_CALLBACK = "callback";
@@ -64,7 +68,6 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
 
     private void checkUpdate(UpdateCheckRequest request, int callback) {
         Intent intent = new Intent(ACTION_CHECK);
-        intent.putExtra(EXTRA_CALLBACK, callback);
         try {
             Log.d(TAG, "Checking for updates");
             GsonBuilder builder = new GsonBuilder();
@@ -76,13 +79,21 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             Call<UpdateCheckResponse> call = api.checkUpdate(request.getApiKey(), request);
             Response<UpdateCheckResponse> response = call.execute();
             if (response.isSuccessful()) {
-                intent.putExtra(EXTRA_RESPONSE, response.body());
+                UpdateCheckResponse update = response.body();
+                if (update == null) {
+                    intent.addCategory(UPDATE_UNAVAILABLE);
+                } else {
+                    intent.addCategory(UPDATE_AVAILABLE);
+                    intent.putExtra(EXTRA_RESPONSE, update);
+                }
             } else {
-                intent.putExtra(EXTRA_RESPONSE, UpdateCheckResponse.fromError(response.code() + " " + response.message()));
+                throw new RuntimeException(response.code() + " " + response.message());
             }
         } catch (Throwable t) {
+            intent.addCategory(UPDATE_REQUEST_ERROR);
             intent.putExtra(UpdateCheckService.EXTRA_EXCEPTION, t);
         }
+        intent.putExtra(EXTRA_CALLBACK, callback);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
