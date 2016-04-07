@@ -82,9 +82,11 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
                 UpdateCheckResponse update = response.body();
                 if (update == null) {
                     intent.addCategory(UPDATE_UNAVAILABLE);
-                } else {
+                } else if (update.isSuccess()) {
                     intent.addCategory(UPDATE_AVAILABLE);
                     intent.putExtra(EXTRA_RESPONSE, update);
+                } else {
+                    throw new RuntimeException(update.getReason());
                 }
             } else {
                 throw new RuntimeException(response.code() + " " + response.message());

@@ -22,7 +22,9 @@ import io.barracks.ota.client.api.UpdateCheckResponse;
  * Created by saiimons on 16-04-05.
  */
 public interface UpdateCheckCallback {
-    void onCheckFinished(UpdateCheckResponse response);
+    void onUpdateAvailable(UpdateCheckResponse response);
 
-    void onCheckException(Throwable t);
+    void onUpdateUnavailable();
+
+    void onUpdateRequestError(Throwable t);
 }

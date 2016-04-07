@@ -46,16 +46,17 @@ public class CheckUpdateActivity extends AppCompatActivity {
         helper = new UpdateCheckHelper();
         helper.bind(this, new UpdateCheckCallback() {
             @Override
-            public void onCheckFinished(UpdateCheckResponse response) {
-                if (response.isSuccess()) {
-                    Log.d(TAG, "Update check success " + response);
-                } else {
-                    Log.e(TAG, "Update check failed: " + response.getReason());
-                }
+            public void onUpdateAvailable(UpdateCheckResponse response) {
+                Log.d(TAG, "Update available: " + response.getVersionId());
             }
 
             @Override
-            public void onCheckException(Throwable t) {
+            public void onUpdateUnavailable() {
+                Log.d(TAG, "Update unavailable");
+            }
+
+            @Override
+            public void onUpdateRequestError(Throwable t) {
                 Log.e(TAG, "Update check failed", t);
             }
         });

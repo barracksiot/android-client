@@ -44,10 +44,12 @@ public class UpdateCheckHelper extends BroadcastReceiver {
         switch (intent.getAction()) {
             case UpdateCheckService.ACTION_CHECK:
                 if (callback.hashCode() == intent.getIntExtra(UpdateCheckService.EXTRA_CALLBACK, 0)) {
-                    if (intent.hasExtra(UpdateCheckService.EXTRA_EXCEPTION)) {
-                        callback.onCheckException((Throwable) intent.getSerializableExtra(UpdateCheckService.EXTRA_EXCEPTION));
-                    } else if (intent.hasExtra(UpdateCheckService.EXTRA_RESPONSE)) {
-                        callback.onCheckFinished((UpdateCheckResponse) intent.getParcelableExtra(UpdateCheckService.EXTRA_RESPONSE));
+                    if (intent.hasCategory(UpdateCheckService.UPDATE_REQUEST_ERROR)) {
+                        callback.onUpdateRequestError((Throwable) intent.getSerializableExtra(UpdateCheckService.EXTRA_EXCEPTION));
+                    } else if (intent.hasCategory(UpdateCheckService.UPDATE_AVAILABLE)) {
+                        callback.onUpdateAvailable((UpdateCheckResponse) intent.getParcelableExtra(UpdateCheckService.EXTRA_RESPONSE));
+                    } else if (intent.hasCategory(UpdateCheckService.UPDATE_UNAVAILABLE)) {
+                        callback.onUpdateUnavailable();
                     }
                 }
                 break;

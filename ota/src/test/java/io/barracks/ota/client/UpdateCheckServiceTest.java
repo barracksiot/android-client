@@ -148,6 +148,12 @@ public class UpdateCheckServiceTest {
                         .addHeader("Cache-Control", "no-cache")
                         .setResponseCode(500)
         );
+        server.enqueue(
+                new MockResponse()
+                        .addHeader("Content-Type", "application/json; charset=utf-8")
+                        .addHeader("Cache-Control", "no-cache")
+                        .setBody("{\"success\":false,\"reason\":\"Mock failure\"}")
+        );
         CallbackFailed testCallback = new CallbackFailed();
         manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
         UpdateCheckRequest request = new UpdateCheckRequest.Builder()
@@ -156,9 +162,15 @@ public class UpdateCheckServiceTest {
                 .unitId("12")
                 .versionId("v0.1")
                 .build();
+
         service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK).putExtra(UpdateCheckService.EXTRA_REQUEST, request));
-        manager.unregisterReceiver(testCallback);
         Assert.assertTrue(testCallback.failed);
+
+        testCallback.failed = false;
+        service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK).putExtra(UpdateCheckService.EXTRA_REQUEST, request));
+        Assert.assertTrue(testCallback.failed);
+
+        manager.unregisterReceiver(testCallback);
     }
 
     @After
