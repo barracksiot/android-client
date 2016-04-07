@@ -20,9 +20,7 @@ import android.os.Parcel;
 import android.text.TextUtils;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
@@ -40,9 +38,6 @@ public class UpdateCheckRequestTest {
     private static final String DEFAULT_API_KEY = "badc0fee";
     private static final String DEFAULT_BASE_URL = "http://barracks.io/";
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
     @Test(expected = IllegalStateException.class)
     public void missingParameter() {
         new UpdateCheckRequest.Builder().build();
@@ -50,28 +45,50 @@ public class UpdateCheckRequestTest {
 
     @Test(expected = IllegalStateException.class)
     public void missingApiKey() {
-        new UpdateCheckRequest.Builder().baseUrl(DEFAULT_BASE_URL).unitId(DEFAULT_UNIT_ID).versionId(DEFAULT_VERSION_ID).build();
+        new UpdateCheckRequest.Builder()
+                .baseUrl(DEFAULT_BASE_URL)
+                .unitId(DEFAULT_UNIT_ID)
+                .versionId(DEFAULT_VERSION_ID)
+                .build();
     }
 
     @Test(expected = IllegalStateException.class)
     public void missingUnitId() {
-        new UpdateCheckRequest.Builder().baseUrl(DEFAULT_BASE_URL).apiKey(DEFAULT_API_KEY).versionId(DEFAULT_VERSION_ID).build();
+        new UpdateCheckRequest.Builder()
+                .baseUrl(DEFAULT_BASE_URL)
+                .apiKey(DEFAULT_API_KEY)
+                .versionId(DEFAULT_VERSION_ID)
+                .build();
     }
 
     @Test(expected = IllegalStateException.class)
     public void missingVersionId() {
-        new UpdateCheckRequest.Builder().baseUrl(DEFAULT_BASE_URL).apiKey(DEFAULT_API_KEY).unitId(DEFAULT_UNIT_ID).build();
+        new UpdateCheckRequest.Builder()
+                .baseUrl(DEFAULT_BASE_URL)
+                .apiKey(DEFAULT_API_KEY)
+                .unitId(DEFAULT_UNIT_ID)
+                .build();
     }
 
     @Test
     public void correctRequest() {
         UpdateCheckRequest request;
-        request = new UpdateCheckRequest.Builder().baseUrl(DEFAULT_BASE_URL).apiKey(DEFAULT_API_KEY).unitId(DEFAULT_UNIT_ID).versionId(DEFAULT_VERSION_ID).build();
+        request = new UpdateCheckRequest.Builder()
+                .baseUrl(DEFAULT_BASE_URL)
+                .apiKey(DEFAULT_API_KEY)
+                .unitId(DEFAULT_UNIT_ID)
+                .versionId(DEFAULT_VERSION_ID)
+                .build();
         Assert.assertEquals(DEFAULT_BASE_URL, request.getBaseUrl());
         Assert.assertEquals(DEFAULT_API_KEY, request.getApiKey());
         Assert.assertEquals(DEFAULT_UNIT_ID, request.getUnitId());
         Assert.assertEquals(DEFAULT_VERSION_ID, request.getVersionId());
-        request = new UpdateCheckRequest.Builder().apiKey(DEFAULT_API_KEY).unitId(DEFAULT_UNIT_ID).versionId(DEFAULT_VERSION_ID).build();
+
+        request = new UpdateCheckRequest.Builder()
+                .apiKey(DEFAULT_API_KEY)
+                .unitId(DEFAULT_UNIT_ID)
+                .versionId(DEFAULT_VERSION_ID)
+                .build();
         Assert.assertEquals(DEFAULT_API_KEY, request.getApiKey());
         Assert.assertEquals(DEFAULT_UNIT_ID, request.getUnitId());
         Assert.assertEquals(DEFAULT_VERSION_ID, request.getVersionId());
@@ -82,14 +99,11 @@ public class UpdateCheckRequestTest {
     public void parcel() {
         UpdateCheckRequest request = new UpdateCheckRequest.Builder().apiKey(DEFAULT_API_KEY).unitId(DEFAULT_UNIT_ID).versionId(DEFAULT_VERSION_ID).build();
 
-        // Obtain a Parcel object and write the parcelable object to it:
         Parcel parcel = Parcel.obtain();
         request.writeToParcel(parcel, 0);
 
-        // After you're done with writing, you need to reset the parcel for reading:
         parcel.setDataPosition(0);
 
-        // Reconstruct object from parcel and asserts:
         UpdateCheckRequest createdFromParcel = UpdateCheckRequest.CREATOR.createFromParcel(parcel);
         Assert.assertEquals(request.getBaseUrl(), createdFromParcel.getBaseUrl());
         Assert.assertEquals(request.getApiKey(), createdFromParcel.getApiKey());

@@ -16,6 +16,7 @@
 
 package io.barracks.ota.client.api;
 
+import android.os.Parcel;
 import android.text.TextUtils;
 
 import com.google.gson.ExclusionStrategy;
@@ -42,22 +43,28 @@ import io.barracks.client.ota.BuildConfig;
 @Config(constants = BuildConfig.class, sdk = 23)
 public class UpdateCheckResponseTest {
 
-    @Test
-    public void parseSuccess() throws IOException {
-        Gson gson = new GsonBuilder().setExclusionStrategies(new ExclusionStrategy() {
-            @Override
-            public boolean shouldSkipField(FieldAttributes f) {
-                return "__robo_data__".equals(f.getName());
-            }
+    private UpdateCheckResponse parseFromResources() throws IOException {
+        Gson gson = new GsonBuilder()
+                .setExclusionStrategies(
+                        new ExclusionStrategy() {
+                            @Override
+                            public boolean shouldSkipField(FieldAttributes f) {
+                                return "__robo_data__".equals(f.getName());
+                            }
 
-            @Override
-            public boolean shouldSkipClass(Class<?> clazz) {
-                return false;
-            }
-        }).create();
+                            @Override
+                            public boolean shouldSkipClass(Class<?> clazz) {
+                                return false;
+                            }
+                        }
+                )
+                .create();
         ClassLoader.getSystemResource("update_check_response_success.json");
         File f = new File(ClassLoader.getSystemResource("update_check_response_success.json").getPath());
-        UpdateCheckResponse response = gson.fromJson(new FileReader(f), UpdateCheckResponse.class);
+        return gson.fromJson(new FileReader(f), UpdateCheckResponse.class);
+    }
+
+    private void assertValues(UpdateCheckResponse response) {
         Assert.assertNotNull(response);
         Assert.assertTrue(response.isSuccess());
         Assert.assertTrue(TextUtils.isEmpty(response.getReason()));
@@ -65,6 +72,38 @@ public class UpdateCheckResponseTest {
         Assert.assertTrue("http://barracks.io/".equals(response.getUrl()));
         Assert.assertTrue("deadbeef".equals(response.getHash()));
         Assert.assertEquals(21432144324324322l, response.getSize().longValue());
+    }
+
+    @Test
+    public void parseSuccess() throws IOException {
+        UpdateCheckResponse response = parseFromResources();
+        assertValues(response);
+    }
+
+    @Test
+    public void parcel() throws IOException {
+        UpdateCheckResponse response = parseFromResources();
+
+        Parcel parcel = Parcel.obtain();
+        response.writeToParcel(parcel, 0);
+
+        parcel.setDataPosition(0);
+
+        response = UpdateCheckResponse.CREATOR.createFromParcel(parcel);
+        assertValues(response);
+    }
+
+    @Test
+    public void errorResponse() {
+        String error = "Test failure.";
+        UpdateCheckResponse response = UpdateCheckResponse.fromError(error);
+        Assert.assertNotNull(response);
+        Assert.assertFalse(response.isSuccess());
+        Assert.assertTrue(error.equals(response.getReason()));
+        Assert.assertTrue(TextUtils.isEmpty(response.getHash()));
+        Assert.assertTrue(TextUtils.isEmpty(response.getUrl()));
+        Assert.assertTrue(TextUtils.isEmpty(response.getVersionId()));
+        Assert.assertNull(response.getSize());
     }
 
 }
