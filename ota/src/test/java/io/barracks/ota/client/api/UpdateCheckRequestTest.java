@@ -16,6 +16,7 @@
 
 package io.barracks.ota.client.api;
 
+import android.os.Bundle;
 import android.os.Parcel;
 import android.text.TextUtils;
 
@@ -26,6 +27,7 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
 import io.barracks.client.ota.BuildConfig;
+import io.barracks.ota.client.Utils;
 
 /**
  * Created by saiimons on 16-04-06.
@@ -73,16 +75,20 @@ public class UpdateCheckRequestTest {
     @Test
     public void correctRequest() {
         UpdateCheckRequest request;
+        Bundle properties = new Bundle();
+        properties.putString("string", "toto");
         request = new UpdateCheckRequest.Builder()
                 .baseUrl(DEFAULT_BASE_URL)
                 .apiKey(DEFAULT_API_KEY)
                 .unitId(DEFAULT_UNIT_ID)
                 .versionId(DEFAULT_VERSION_ID)
+                .properties(properties)
                 .build();
         Assert.assertEquals(DEFAULT_BASE_URL, request.getBaseUrl());
         Assert.assertEquals(DEFAULT_API_KEY, request.getApiKey());
         Assert.assertEquals(DEFAULT_UNIT_ID, request.getUnitId());
         Assert.assertEquals(DEFAULT_VERSION_ID, request.getVersionId());
+        Assert.assertTrue(Utils.compareBundles(properties, request.getProperties()));
 
         request = new UpdateCheckRequest.Builder()
                 .apiKey(DEFAULT_API_KEY)
@@ -97,17 +103,23 @@ public class UpdateCheckRequestTest {
 
     @Test
     public void parcel() {
-        UpdateCheckRequest request = new UpdateCheckRequest.Builder().apiKey(DEFAULT_API_KEY).unitId(DEFAULT_UNIT_ID).versionId(DEFAULT_VERSION_ID).build();
-
+        Bundle properties = new Bundle();
+        properties.putString("string", "toto");
+        UpdateCheckRequest request = new UpdateCheckRequest.Builder()
+                .apiKey(DEFAULT_API_KEY)
+                .unitId(DEFAULT_UNIT_ID)
+                .versionId(DEFAULT_VERSION_ID)
+                .properties(properties)
+                .build();
         Parcel parcel = Parcel.obtain();
         request.writeToParcel(parcel, 0);
 
         parcel.setDataPosition(0);
-
         UpdateCheckRequest createdFromParcel = UpdateCheckRequest.CREATOR.createFromParcel(parcel);
         Assert.assertEquals(request.getBaseUrl(), createdFromParcel.getBaseUrl());
         Assert.assertEquals(request.getApiKey(), createdFromParcel.getApiKey());
         Assert.assertEquals(request.getUnitId(), createdFromParcel.getUnitId());
         Assert.assertEquals(request.getVersionId(), createdFromParcel.getVersionId());
+        Assert.assertTrue(Utils.compareBundles(properties, request.getProperties()));
     }
 }

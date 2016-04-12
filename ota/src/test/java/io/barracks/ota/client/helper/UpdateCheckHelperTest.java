@@ -16,12 +16,21 @@
 
 package io.barracks.ota.client.helper;
 
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 import io.barracks.client.ota.BuildConfig;
+import io.barracks.ota.client.UpdateCheckService;
+import io.barracks.ota.client.api.UpdateCheckRequest;
+import io.barracks.ota.client.api.UpdateCheckResponse;
 
 /**
  * Created by saiimons on 16-04-07.
@@ -30,6 +39,87 @@ import io.barracks.client.ota.BuildConfig;
 @Config(constants = BuildConfig.class, sdk = 23)
 public class UpdateCheckHelperTest {
     @Test
-    public void test() {
+    public void calls() {
+        TestCallback callback;
+
+        UpdateCheckHelper helper = new UpdateCheckHelper();
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
+
+        callback = new TestCallback();
+        helper.bind(RuntimeEnvironment.application, callback);
+        manager.sendBroadcast(
+                new Intent(UpdateCheckService.ACTION_CHECK)
+                        .addCategory(UpdateCheckService.UPDATE_AVAILABLE)
+                        .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())
+        );
+        Assert.assertTrue(callback.available);
+        Assert.assertFalse(callback.unavailable);
+        Assert.assertFalse(callback.error);
+        helper.unbind(RuntimeEnvironment.application);
+
+        callback = new TestCallback();
+        helper.bind(RuntimeEnvironment.application, callback);
+        manager.sendBroadcast(
+                new Intent(UpdateCheckService.ACTION_CHECK)
+                        .addCategory(UpdateCheckService.UPDATE_UNAVAILABLE)
+                        .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())
+        );
+        Assert.assertTrue(callback.unavailable);
+        Assert.assertFalse(callback.available);
+        Assert.assertFalse(callback.error);
+        helper.unbind(RuntimeEnvironment.application);
+
+        callback = new TestCallback();
+        helper.bind(RuntimeEnvironment.application, callback);
+        manager.sendBroadcast(
+                new Intent(UpdateCheckService.ACTION_CHECK)
+                        .addCategory(UpdateCheckService.UPDATE_REQUEST_ERROR)
+                        .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())
+        );
+        Assert.assertTrue(callback.error);
+        Assert.assertFalse(callback.available);
+        Assert.assertFalse(callback.unavailable);
+        helper.unbind(RuntimeEnvironment.application);
+    }
+
+    @Test
+    public void service() {
+        UpdateCheckRequest request = new UpdateCheckRequest.Builder()
+                .apiKey("deadbeef")
+                .unitId("HAL")
+                .versionId("42")
+                .build();
+        TestCallback callback = new TestCallback();
+        UpdateCheckHelper helper = new UpdateCheckHelper();
+        helper.bind(RuntimeEnvironment.application, callback);
+        helper.requestUpdate(request);
+        Intent intent = Shadows.shadowOf(RuntimeEnvironment.application).getNextStartedService();
+        Assert.assertNotNull(intent);
+        Assert.assertEquals(intent.getComponent().getClassName(), UpdateCheckService.class.getName());
+        Assert.assertEquals(intent.getAction(), UpdateCheckService.ACTION_CHECK);
+        Assert.assertEquals(callback.hashCode(), intent.getIntExtra(UpdateCheckService.EXTRA_CALLBACK, 0));
+        UpdateCheckRequest request2 = intent.getParcelableExtra(UpdateCheckService.EXTRA_REQUEST);
+        Assert.assertNotNull(request2);
+        helper.unbind(RuntimeEnvironment.application);
+    }
+
+    private static final class TestCallback implements UpdateCheckCallback {
+        boolean available = false;
+        boolean unavailable = false;
+        boolean error = false;
+
+        public void onUpdateAvailable(UpdateCheckResponse response) {
+            available = true;
+        }
+
+        @Override
+        public void onUpdateUnavailable() {
+            unavailable = true;
+        }
+
+        @Override
+        public void onUpdateRequestError(Throwable t) {
+            error = true;
+        }
     }
 }
