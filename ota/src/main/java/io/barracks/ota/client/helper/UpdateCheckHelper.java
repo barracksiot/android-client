@@ -20,7 +20,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
 import io.barracks.ota.client.UpdateCheckService;
 import io.barracks.ota.client.api.UpdateCheckRequest;
@@ -39,7 +38,6 @@ public class UpdateCheckHelper extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(TAG, "received " + intent);
         switch (intent.getAction()) {
             case UpdateCheckService.ACTION_CHECK:
                 if (callback.hashCode() == intent.getIntExtra(UpdateCheckService.EXTRA_CALLBACK, 0)) {
