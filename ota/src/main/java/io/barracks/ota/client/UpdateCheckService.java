@@ -102,7 +102,6 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             intent.putExtra(UpdateCheckService.EXTRA_EXCEPTION, t);
         }
         intent.putExtra(EXTRA_CALLBACK, callback);
-        intent.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
