@@ -35,7 +35,6 @@ public class UpdateCheckResponse implements Parcelable {
             return new UpdateCheckResponse[size];
         }
     };
-    private boolean success;
     private String reason;
 
     private String versionId;
@@ -49,7 +48,6 @@ public class UpdateCheckResponse implements Parcelable {
     }
 
     protected UpdateCheckResponse(Parcel in) {
-        success = in.readByte() != 0x00;
         reason = in.readString();
         versionId = in.readString();
         url = in.readString();
@@ -60,13 +58,8 @@ public class UpdateCheckResponse implements Parcelable {
 
     public static UpdateCheckResponse fromError(String message) {
         UpdateCheckResponse response = new UpdateCheckResponse();
-        response.success = false;
         response.reason = message;
         return response;
-    }
-
-    public boolean isSuccess() {
-        return success;
     }
 
     public String getReason() {
@@ -100,7 +93,6 @@ public class UpdateCheckResponse implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeByte((byte) (success ? 0x01 : 0x00));
         dest.writeString(reason);
         dest.writeString(versionId);
         dest.writeString(url);

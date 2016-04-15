@@ -18,6 +18,7 @@ package io.barracks.ota.client;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
@@ -59,8 +60,15 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     public static final String EXTRA_EXCEPTION = "exception";
     public static final String EXTRA_RESPONSE = "response";
     public static final String EXTRA_CALLBACK = "callback";
-
+    public static final IntentFilter ACTION_CHECK_FILTER;
     private static final String TAG = UpdateCheckService.class.getSimpleName();
+
+    static {
+        ACTION_CHECK_FILTER = new IntentFilter(ACTION_CHECK);
+        ACTION_CHECK_FILTER.addCategory(UPDATE_AVAILABLE);
+        ACTION_CHECK_FILTER.addCategory(UPDATE_UNAVAILABLE);
+        ACTION_CHECK_FILTER.addCategory(UPDATE_REQUEST_ERROR);
+    }
 
     public UpdateCheckService() {
         super(TAG);
@@ -82,11 +90,9 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
                 UpdateCheckResponse update = response.body();
                 if (update == null) {
                     intent.addCategory(UPDATE_UNAVAILABLE);
-                } else if (update.isSuccess()) {
+                } else {
                     intent.addCategory(UPDATE_AVAILABLE);
                     intent.putExtra(EXTRA_RESPONSE, update);
-                } else {
-                    throw new RuntimeException(update.getReason());
                 }
             } else {
                 throw new RuntimeException(response.code() + " " + response.message());
@@ -96,6 +102,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             intent.putExtra(UpdateCheckService.EXTRA_EXCEPTION, t);
         }
         intent.putExtra(EXTRA_CALLBACK, callback);
+        intent.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 

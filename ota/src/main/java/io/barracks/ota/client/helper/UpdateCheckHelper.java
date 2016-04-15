@@ -19,7 +19,6 @@ package io.barracks.ota.client.helper;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -39,7 +38,7 @@ public class UpdateCheckHelper extends BroadcastReceiver {
     }
 
     @Override
-    public synchronized void onReceive(Context context, Intent intent) {
+    public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "received " + intent);
         switch (intent.getAction()) {
             case UpdateCheckService.ACTION_CHECK:
@@ -56,21 +55,21 @@ public class UpdateCheckHelper extends BroadcastReceiver {
         }
     }
 
-    public synchronized void bind(Context context, UpdateCheckCallback callback) {
+    public void bind(Context context, UpdateCheckCallback callback) {
         this.context = context;
         this.callback = callback;
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
-        manager.registerReceiver(this, new IntentFilter(UpdateCheckService.ACTION_CHECK));
+        manager.registerReceiver(this, UpdateCheckService.ACTION_CHECK_FILTER);
     }
 
-    public synchronized void unbind(Context context) {
+    public void unbind(Context context) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
         manager.unregisterReceiver(this);
         this.context = null;
         this.callback = null;
     }
 
-    public synchronized void requestUpdate(UpdateCheckRequest request) {
+    public void requestUpdate(UpdateCheckRequest request) {
         Intent intent = new Intent(context, UpdateCheckService.class)
                 .setAction(UpdateCheckService.ACTION_CHECK)
                 .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())

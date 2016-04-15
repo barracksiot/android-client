@@ -19,7 +19,6 @@ package io.barracks.ota.client;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 
 import org.junit.After;
@@ -68,7 +67,7 @@ public class UpdateCheckServiceTest {
     @Test
     public void callbackRan() {
         CallbackCalled testCallback = new CallbackCalled();
-        manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
+        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
         service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK));
         manager.unregisterReceiver(testCallback);
         assertTrue(testCallback.called);
@@ -77,7 +76,7 @@ public class UpdateCheckServiceTest {
     @Test
     public void missingParameters() {
         CallbackFailed testCallback = new CallbackFailed();
-        manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
+        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
         service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK));
         manager.unregisterReceiver(testCallback);
         assertTrue(testCallback.failed);
@@ -103,7 +102,7 @@ public class UpdateCheckServiceTest {
         );
 
         CallbackSuccess testCallback = new CallbackSuccess();
-        manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
+        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
         UpdateCheckRequest request = new UpdateCheckRequest.Builder()
                 .apiKey("123456789abcdef")
                 .baseUrl(server.url("/").toString())
@@ -126,7 +125,7 @@ public class UpdateCheckServiceTest {
                         .setStatus("HTTP/1.1 204 No content")
         );
         CallbackSuccess testCallback = new CallbackSuccess();
-        manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
+        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
         UpdateCheckRequest request = new UpdateCheckRequest.Builder()
                 .apiKey("123456789abcdef")
                 .baseUrl(server.url("/").toString())
@@ -148,14 +147,8 @@ public class UpdateCheckServiceTest {
                         .addHeader("Cache-Control", "no-cache")
                         .setResponseCode(500)
         );
-        server.enqueue(
-                new MockResponse()
-                        .addHeader("Content-Type", "application/json; charset=utf-8")
-                        .addHeader("Cache-Control", "no-cache")
-                        .setBody("{\"success\":false,\"reason\":\"Mock failure\"}")
-        );
         CallbackFailed testCallback = new CallbackFailed();
-        manager.registerReceiver(testCallback, new IntentFilter(UpdateCheckService.ACTION_CHECK));
+        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
         UpdateCheckRequest request = new UpdateCheckRequest.Builder()
                 .apiKey("123456789abcdef")
                 .baseUrl(server.url("/").toString())
@@ -163,10 +156,6 @@ public class UpdateCheckServiceTest {
                 .versionId("v0.1")
                 .build();
 
-        service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK).putExtra(UpdateCheckService.EXTRA_REQUEST, request));
-        Assert.assertTrue(testCallback.failed);
-
-        testCallback.failed = false;
         service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK).putExtra(UpdateCheckService.EXTRA_REQUEST, request));
         Assert.assertTrue(testCallback.failed);
 

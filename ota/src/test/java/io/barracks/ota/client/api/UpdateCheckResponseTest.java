@@ -45,7 +45,6 @@ public class UpdateCheckResponseTest {
 
     public static void assertValues(UpdateCheckResponse response) {
         Assert.assertNotNull(response);
-        Assert.assertTrue(response.isSuccess());
         Assert.assertTrue(TextUtils.isEmpty(response.getReason()));
         Assert.assertTrue("42".equals(response.getVersionId()));
         Assert.assertTrue("http://barracks.io/".equals(response.getUrl()));
@@ -91,19 +90,6 @@ public class UpdateCheckResponseTest {
 
         response = UpdateCheckResponse.CREATOR.createFromParcel(parcel);
         assertValues(response);
-    }
-
-    @Test
-    public void errorResponse() {
-        String error = "Test failure.";
-        UpdateCheckResponse response = UpdateCheckResponse.fromError(error);
-        Assert.assertNotNull(response);
-        Assert.assertFalse(response.isSuccess());
-        Assert.assertTrue(error.equals(response.getReason()));
-        Assert.assertTrue(TextUtils.isEmpty(response.getHash()));
-        Assert.assertTrue(TextUtils.isEmpty(response.getUrl()));
-        Assert.assertTrue(TextUtils.isEmpty(response.getVersionId()));
-        Assert.assertNull(response.getSize());
     }
 
 }
