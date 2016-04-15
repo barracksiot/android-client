@@ -18,9 +18,10 @@ package io.barracks.ota.sample;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import io.barracks.ota.client.api.UpdateCheckRequest;
 import io.barracks.ota.client.api.UpdateCheckResponse;
@@ -32,12 +33,14 @@ public class CheckUpdateActivity extends AppCompatActivity {
     private static final String TAG = CheckUpdateActivity.class.getSimpleName();
     private UpdateCheckHelper helper;
     private Button check;
+    private EditText version;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_update);
         check = (Button) findViewById(R.id.btn_check);
+        version = (EditText) findViewById(R.id.version);
     }
 
     @Override
@@ -47,17 +50,17 @@ public class CheckUpdateActivity extends AppCompatActivity {
         helper.bind(this, new UpdateCheckCallback() {
             @Override
             public void onUpdateAvailable(UpdateCheckResponse response) {
-                Log.d(TAG, "Update available: " + response.getVersionId());
+                Toast.makeText(CheckUpdateActivity.this, "Update available: " + response.getVersionId(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onUpdateUnavailable() {
-                Log.d(TAG, "Update unavailable");
+                Toast.makeText(CheckUpdateActivity.this, "Update unavailable", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onUpdateRequestError(Throwable t) {
-                Log.e(TAG, "Update check failed", t);
+                Toast.makeText(CheckUpdateActivity.this, "Update check failed " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
         check.setOnClickListener(
@@ -65,7 +68,12 @@ public class CheckUpdateActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         helper.requestUpdate(
-                                new UpdateCheckRequest.Builder().build()
+                                new UpdateCheckRequest.Builder()
+                                        .versionId(version.getText().toString())
+                                        .apiKey("deadbeef")
+                                        .unitId("bond007")
+                                        .baseUrl("http://integration-01.barracks.io/")
+                                        .build()
                         );
                     }
                 }
