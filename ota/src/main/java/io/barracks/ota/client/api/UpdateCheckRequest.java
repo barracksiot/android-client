@@ -44,7 +44,7 @@ public class UpdateCheckRequest implements Parcelable {
     protected UpdateCheckRequest(Parcel in) {
         unitId = in.readString();
         versionId = in.readString();
-        properties = in.readBundle();
+        properties = in.readBundle(getClass().getClassLoader());
     }
 
     private UpdateCheckRequest(String unitId, String versionId, Bundle properties) {

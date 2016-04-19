@@ -51,7 +51,7 @@ public class UpdateCheckResponse implements Parcelable {
         url = in.readString();
         hash = in.readString();
         size = in.readLong();
-        properties = in.readBundle();
+        properties = in.readBundle(getClass().getClassLoader());
     }
 
     public String getVersionId() {
