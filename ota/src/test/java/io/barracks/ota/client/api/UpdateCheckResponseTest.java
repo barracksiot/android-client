@@ -46,7 +46,7 @@ public class UpdateCheckResponseTest {
         Assert.assertNotNull(response);
         Assert.assertTrue("42".equals(response.getVersionId()));
         Assert.assertTrue("http://barracks.io/".equals(response.getPackageInfo().getUrl()));
-        Assert.assertTrue("deadbeef".equals(response.getPackageInfo().getHash()));
+        Assert.assertTrue("deadbeef".equals(response.getPackageInfo().getMd5()));
         Assert.assertEquals(21432144324324322L, response.getPackageInfo().getSize().longValue());
     }
 

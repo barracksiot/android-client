@@ -36,7 +36,7 @@ public class PackageInfo implements Parcelable {
         }
     };
     private String url;
-    private String hash;
+    private String md5;
     private Long size;
 
 
@@ -46,14 +46,14 @@ public class PackageInfo implements Parcelable {
 
     protected PackageInfo(Parcel in) {
         url = in.readString();
-        hash = in.readString();
+        md5 = in.readString();
         size = in.readLong();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(url);
-        dest.writeString(hash);
+        dest.writeString(md5);
         dest.writeLong(size);
     }
 
@@ -66,8 +66,8 @@ public class PackageInfo implements Parcelable {
         return url;
     }
 
-    public String getHash() {
-        return hash;
+    public String getMd5() {
+        return md5;
     }
 
     public Long getSize() {
