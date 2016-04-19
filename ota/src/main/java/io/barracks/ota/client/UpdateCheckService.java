@@ -52,6 +52,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class UpdateCheckService extends IntentService implements TypeAdapterFactory {
     public static final String ACTION_CHECK = "io.barracks.ota.client.CHECK_UPDATE";
     public static final String EXTRA_REQUEST = "check_request";
+    public static final String EXTRA_URL = "url";
+    public static final String EXTRA_APIKEY = "apiKey";
 
     public static final String UPDATE_AVAILABLE = "io.barracks.ota.client.UPDATE_AVAILABLE";
     public static final String UPDATE_UNAVAILABLE = "io.barracks.ota.client.update_available.UPDATE_UNAVAILABLE";
@@ -74,17 +76,23 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         super(TAG);
     }
 
-    private void checkUpdate(UpdateCheckRequest request, int callback) {
+    private void checkUpdate(String apiKey, String baseUrl, UpdateCheckRequest request, int callback) {
         Intent intent = new Intent(ACTION_CHECK);
         try {
+            if (TextUtils.isEmpty(apiKey)) {
+                throw new RuntimeException("Missing API key");
+            }
+            if (request == null) {
+                throw new RuntimeException("Missing request");
+            }
             Log.d(TAG, "Checking for updates");
             GsonBuilder builder = new GsonBuilder();
             Retrofit retrofit = new Retrofit.Builder()
                     .addConverterFactory(GsonConverterFactory.create(setUpGsonBuilder(builder).create()))
-                    .baseUrl(TextUtils.isEmpty(request.getBaseUrl()) ? "https://barracks.io/" : request.getBaseUrl())
+                    .baseUrl(TextUtils.isEmpty(baseUrl) ? "http://barracks.io" : baseUrl)
                     .build();
             UpdateCheckApi api = retrofit.create(UpdateCheckApi.class);
-            Call<UpdateCheckResponse> call = api.checkUpdate(request.getApiKey(), request);
+            Call<UpdateCheckResponse> call = api.checkUpdate(apiKey, request);
             Response<UpdateCheckResponse> response = call.execute();
             if (response.isSuccessful()) {
                 UpdateCheckResponse update = response.body();
@@ -128,7 +136,12 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     protected void onHandleIntent(Intent intent) {
         switch (intent.getAction()) {
             case ACTION_CHECK:
-                checkUpdate(intent.<UpdateCheckRequest>getParcelableExtra(EXTRA_REQUEST), intent.getIntExtra(EXTRA_CALLBACK, 0));
+                checkUpdate(
+                        intent.getStringExtra(EXTRA_APIKEY),
+                        intent.getStringExtra(EXTRA_URL),
+                        intent.<UpdateCheckRequest>getParcelableExtra(EXTRA_REQUEST),
+                        intent.getIntExtra(EXTRA_CALLBACK, 0)
+                );
                 break;
         }
     }

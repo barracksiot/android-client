@@ -35,7 +35,6 @@ public class UpdateCheckResponse implements Parcelable {
             return new UpdateCheckResponse[size];
         }
     };
-    private String reason;
 
     private String versionId;
     private String url;
@@ -48,22 +47,11 @@ public class UpdateCheckResponse implements Parcelable {
     }
 
     protected UpdateCheckResponse(Parcel in) {
-        reason = in.readString();
         versionId = in.readString();
         url = in.readString();
         hash = in.readString();
         size = in.readLong();
         properties = in.readBundle();
-    }
-
-    public static UpdateCheckResponse fromError(String message) {
-        UpdateCheckResponse response = new UpdateCheckResponse();
-        response.reason = message;
-        return response;
-    }
-
-    public String getReason() {
-        return reason;
     }
 
     public String getVersionId() {
@@ -93,7 +81,6 @@ public class UpdateCheckResponse implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(reason);
         dest.writeString(versionId);
         dest.writeString(url);
         dest.writeString(hash);

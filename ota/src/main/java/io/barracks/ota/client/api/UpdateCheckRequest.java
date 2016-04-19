@@ -37,35 +37,20 @@ public class UpdateCheckRequest implements Parcelable {
         }
     };
 
-    private final transient String apiKey;
-    private final transient String baseUrl;
-
     private final String unitId;
     private final String versionId;
     private final Bundle properties;
 
     protected UpdateCheckRequest(Parcel in) {
-        apiKey = in.readString();
-        baseUrl = in.readString();
         unitId = in.readString();
         versionId = in.readString();
         properties = in.readBundle();
     }
 
-    private UpdateCheckRequest(String apiKey, String baseUrl, String unitId, String versionId, Bundle properties) {
-        this.apiKey = apiKey;
-        this.baseUrl = baseUrl;
+    private UpdateCheckRequest(String unitId, String versionId, Bundle properties) {
         this.unitId = unitId;
         this.versionId = versionId;
         this.properties = properties;
-    }
-
-    public String getApiKey() {
-        return apiKey;
-    }
-
-    public String getBaseUrl() {
-        return baseUrl;
     }
 
     public String getUnitId() {
@@ -87,32 +72,18 @@ public class UpdateCheckRequest implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(apiKey);
-        dest.writeString(baseUrl);
         dest.writeString(unitId);
         dest.writeString(versionId);
         dest.writeBundle(properties);
     }
 
     public static final class Builder {
-        private String apiKey = null;
-        private String baseUrl = null;
         private String unitId = null;
         private String versionId = null;
         private Bundle properties = null;
 
         public Builder() {
 
-        }
-
-        public Builder apiKey(String apiKey) {
-            this.apiKey = apiKey;
-            return this;
-        }
-
-        public Builder baseUrl(String baseUrl) {
-            this.baseUrl = baseUrl;
-            return this;
         }
 
         public Builder unitId(String unitId) {
@@ -131,16 +102,13 @@ public class UpdateCheckRequest implements Parcelable {
         }
 
         public UpdateCheckRequest build() {
-            if (TextUtils.isEmpty(apiKey)) {
-                throw new IllegalStateException("API Key is required");
-            }
             if (TextUtils.isEmpty(unitId)) {
                 throw new IllegalStateException("Unit ID is required");
             }
             if (TextUtils.isEmpty(versionId)) {
                 throw new IllegalStateException("Version ID is required");
             }
-            return new UpdateCheckRequest(apiKey, baseUrl, unitId, versionId, properties);
+            return new UpdateCheckRequest(unitId, versionId, properties);
         }
     }
 }

@@ -42,7 +42,7 @@ public class UpdateCheckHelperTest {
     public void calls() {
         TestCallback callback;
 
-        UpdateCheckHelper helper = new UpdateCheckHelper();
+        UpdateCheckHelper helper = new UpdateCheckHelper("deadbeef");
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
 
         callback = new TestCallback();
@@ -85,12 +85,11 @@ public class UpdateCheckHelperTest {
     @Test
     public void service() {
         UpdateCheckRequest request = new UpdateCheckRequest.Builder()
-                .apiKey("deadbeef")
                 .unitId("HAL")
                 .versionId("42")
                 .build();
         TestCallback callback = new TestCallback();
-        UpdateCheckHelper helper = new UpdateCheckHelper();
+        UpdateCheckHelper helper = new UpdateCheckHelper("deadbeef");
         helper.bind(RuntimeEnvironment.application, callback);
         helper.requestUpdate(request);
         Intent intent = Shadows.shadowOf(RuntimeEnvironment.application).getNextStartedService();

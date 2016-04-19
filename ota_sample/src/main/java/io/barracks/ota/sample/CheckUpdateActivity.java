@@ -46,7 +46,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        helper = new UpdateCheckHelper();
+        helper = new UpdateCheckHelper("deadbeef", "http://integration-01.barracks.io/");
         helper.bind(this, new UpdateCheckCallback() {
             @Override
             public void onUpdateAvailable(UpdateCheckResponse response) {
@@ -70,9 +70,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
                         helper.requestUpdate(
                                 new UpdateCheckRequest.Builder()
                                         .versionId(version.getText().toString())
-                                        .apiKey("deadbeef")
                                         .unitId("bond007")
-                                        .baseUrl("http://integration-01.barracks.io/")
                                         .build()
                         );
                     }

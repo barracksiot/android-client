@@ -30,10 +30,18 @@ import io.barracks.ota.client.api.UpdateCheckResponse;
  */
 public class UpdateCheckHelper extends BroadcastReceiver {
     private static final String TAG = UpdateCheckHelper.class.getSimpleName();
+    private final String apiKey;
+    private final String baseUrl;
     private Context context;
     private UpdateCheckCallback callback;
 
-    public UpdateCheckHelper() {
+    public UpdateCheckHelper(String apiKey) {
+        this(apiKey, null);
+    }
+
+    public UpdateCheckHelper(String apiKey, String baseUrl) {
+        this.apiKey = apiKey;
+        this.baseUrl = baseUrl;
     }
 
     @Override
@@ -70,6 +78,8 @@ public class UpdateCheckHelper extends BroadcastReceiver {
     public void requestUpdate(UpdateCheckRequest request) {
         Intent intent = new Intent(context, UpdateCheckService.class)
                 .setAction(UpdateCheckService.ACTION_CHECK)
+                .putExtra(UpdateCheckService.EXTRA_APIKEY, apiKey)
+                .putExtra(UpdateCheckService.EXTRA_URL, baseUrl)
                 .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())
                 .putExtra(UpdateCheckService.EXTRA_REQUEST, request);
         context.startService(intent);

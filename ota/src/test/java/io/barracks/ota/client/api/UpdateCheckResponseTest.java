@@ -17,7 +17,6 @@
 package io.barracks.ota.client.api;
 
 import android.os.Parcel;
-import android.text.TextUtils;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
@@ -45,7 +44,6 @@ public class UpdateCheckResponseTest {
 
     public static void assertValues(UpdateCheckResponse response) {
         Assert.assertNotNull(response);
-        Assert.assertTrue(TextUtils.isEmpty(response.getReason()));
         Assert.assertTrue("42".equals(response.getVersionId()));
         Assert.assertTrue("http://barracks.io/".equals(response.getUrl()));
         Assert.assertTrue("deadbeef".equals(response.getHash()));
