@@ -22,7 +22,6 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
@@ -85,7 +84,6 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             if (request == null) {
                 throw new RuntimeException("Missing request");
             }
-            Log.d(TAG, "Checking for updates");
             GsonBuilder builder = new GsonBuilder();
             Retrofit retrofit = new Retrofit.Builder()
                     .addConverterFactory(GsonConverterFactory.create(setUpGsonBuilder(builder).create()))
