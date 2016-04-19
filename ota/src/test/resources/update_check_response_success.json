@@ -1,8 +1,10 @@
 {
   "versionId": "42",
-  "url": "http://barracks.io/",
-  "hash": "deadbeef",
-  "size": 21432144324324322,
+  "packageInfo": {
+    "url": "http://barracks.io/",
+    "hash": "deadbeef",
+    "size": 21432144324324322
+  },
   "properties": {
     "string": "toto",
     "integer": 123,

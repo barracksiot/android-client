@@ -45,9 +45,9 @@ public class UpdateCheckResponseTest {
     public static void assertValues(UpdateCheckResponse response) {
         Assert.assertNotNull(response);
         Assert.assertTrue("42".equals(response.getVersionId()));
-        Assert.assertTrue("http://barracks.io/".equals(response.getUrl()));
-        Assert.assertTrue("deadbeef".equals(response.getHash()));
-        Assert.assertEquals(21432144324324322l, response.getSize().longValue());
+        Assert.assertTrue("http://barracks.io/".equals(response.getPackageInfo().getUrl()));
+        Assert.assertTrue("deadbeef".equals(response.getPackageInfo().getHash()));
+        Assert.assertEquals(21432144324324322L, response.getPackageInfo().getSize().longValue());
     }
 
     private UpdateCheckResponse parseFromResources() throws IOException {

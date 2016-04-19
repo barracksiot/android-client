@@ -37,9 +37,7 @@ public class UpdateCheckResponse implements Parcelable {
     };
 
     private String versionId;
-    private String url;
-    private String hash;
-    private Long size;
+    private PackageInfo packageInfo;
     private Bundle properties = new Bundle();
 
     private UpdateCheckResponse() {
@@ -48,9 +46,7 @@ public class UpdateCheckResponse implements Parcelable {
 
     protected UpdateCheckResponse(Parcel in) {
         versionId = in.readString();
-        url = in.readString();
-        hash = in.readString();
-        size = in.readLong();
+        packageInfo = in.readParcelable(getClass().getClassLoader());
         properties = in.readBundle(getClass().getClassLoader());
     }
 
@@ -58,16 +54,8 @@ public class UpdateCheckResponse implements Parcelable {
         return versionId;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public String getHash() {
-        return hash;
-    }
-
-    public Long getSize() {
-        return size;
+    public PackageInfo getPackageInfo() {
+        return packageInfo;
     }
 
     public Bundle getProperties() {
@@ -82,9 +70,7 @@ public class UpdateCheckResponse implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(versionId);
-        dest.writeString(url);
-        dest.writeString(hash);
-        dest.writeLong(size);
+        dest.writeParcelable(packageInfo, 0);
         dest.writeBundle(properties);
     }
 
