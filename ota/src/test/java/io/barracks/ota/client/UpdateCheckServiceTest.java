@@ -70,7 +70,7 @@ public class UpdateCheckServiceTest {
         manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
         service.onHandleIntent(
                 new Intent(UpdateCheckService.ACTION_CHECK)
-                        .putExtra(UpdateCheckService.EXTRA_APIKEY, "mandatory")
+                        .putExtra(UpdateCheckService.EXTRA_API_KEY, "mandatory")
         );
         manager.unregisterReceiver(testCallback);
         assertTrue(testCallback.called);
@@ -103,7 +103,7 @@ public class UpdateCheckServiceTest {
         manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
         service.onHandleIntent(
                 new Intent(UpdateCheckService.ACTION_CHECK)
-                        .putExtra(UpdateCheckService.EXTRA_APIKEY, "badc0fee")
+                        .putExtra(UpdateCheckService.EXTRA_API_KEY, "badc0fee")
         );
         manager.unregisterReceiver(testCallback);
         assertTrue(testCallback.failed);
@@ -137,7 +137,7 @@ public class UpdateCheckServiceTest {
         service.onHandleIntent(
                 new Intent(UpdateCheckService.ACTION_CHECK)
                         .putExtra(UpdateCheckService.EXTRA_URL, server.url("/").toString())
-                        .putExtra(UpdateCheckService.EXTRA_APIKEY, "mandatory")
+                        .putExtra(UpdateCheckService.EXTRA_API_KEY, "mandatory")
                         .putExtra(UpdateCheckService.EXTRA_REQUEST, request)
         );
         manager.unregisterReceiver(testCallback);
@@ -163,7 +163,7 @@ public class UpdateCheckServiceTest {
         service.onHandleIntent(
                 new Intent(UpdateCheckService.ACTION_CHECK)
                         .putExtra(UpdateCheckService.EXTRA_URL, server.url("/").toString())
-                        .putExtra(UpdateCheckService.EXTRA_APIKEY, "mandatory")
+                        .putExtra(UpdateCheckService.EXTRA_API_KEY, "mandatory")
                         .putExtra(UpdateCheckService.EXTRA_REQUEST, request)
         );
         manager.unregisterReceiver(testCallback);
@@ -190,7 +190,7 @@ public class UpdateCheckServiceTest {
         service.onHandleIntent(
                 new Intent(UpdateCheckService.ACTION_CHECK)
                         .putExtra(UpdateCheckService.EXTRA_URL, server.url("/").toString())
-                        .putExtra(UpdateCheckService.EXTRA_APIKEY, "mandatory")
+                        .putExtra(UpdateCheckService.EXTRA_API_KEY, "mandatory")
                         .putExtra(UpdateCheckService.EXTRA_REQUEST, request)
         );
         Assert.assertTrue(testCallback.failed);

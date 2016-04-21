@@ -78,7 +78,7 @@ public class UpdateCheckHelper extends BroadcastReceiver {
     public void requestUpdate(UpdateCheckRequest request) {
         Intent intent = new Intent(context, UpdateCheckService.class)
                 .setAction(UpdateCheckService.ACTION_CHECK)
-                .putExtra(UpdateCheckService.EXTRA_APIKEY, apiKey)
+                .putExtra(UpdateCheckService.EXTRA_API_KEY, apiKey)
                 .putExtra(UpdateCheckService.EXTRA_URL, baseUrl)
                 .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())
                 .putExtra(UpdateCheckService.EXTRA_REQUEST, request);

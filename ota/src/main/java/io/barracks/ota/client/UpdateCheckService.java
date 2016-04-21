@@ -52,7 +52,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     public static final String ACTION_CHECK = "io.barracks.ota.client.CHECK_UPDATE";
     public static final String EXTRA_REQUEST = "check_request";
     public static final String EXTRA_URL = "url";
-    public static final String EXTRA_APIKEY = "apiKey";
+    public static final String EXTRA_API_KEY = "apiKey";
 
     public static final String UPDATE_AVAILABLE = "io.barracks.ota.client.UPDATE_AVAILABLE";
     public static final String UPDATE_UNAVAILABLE = "io.barracks.ota.client.update_available.UPDATE_UNAVAILABLE";
@@ -62,7 +62,6 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     public static final String EXTRA_RESPONSE = "response";
     public static final String EXTRA_CALLBACK = "callback";
     public static final IntentFilter ACTION_CHECK_FILTER;
-    private static final String TAG = UpdateCheckService.class.getSimpleName();
 
     static {
         ACTION_CHECK_FILTER = new IntentFilter(ACTION_CHECK);
@@ -72,7 +71,16 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     }
 
     public UpdateCheckService() {
-        super(TAG);
+        this(UpdateCheckService.class.getSimpleName());
+    }
+
+    /**
+     * Creates an IntentService.  Invoked by your subclass's constructor.
+     *
+     * @param name Used to name the worker thread, important only for debugging.
+     */
+    public UpdateCheckService(String name) {
+        super(name);
     }
 
     private void checkUpdate(String apiKey, String baseUrl, UpdateCheckRequest request, int callback) {
@@ -87,7 +95,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             GsonBuilder builder = new GsonBuilder();
             Retrofit retrofit = new Retrofit.Builder()
                     .addConverterFactory(GsonConverterFactory.create(setUpGsonBuilder(builder).create()))
-                    .baseUrl(TextUtils.isEmpty(baseUrl) ? "http://barracks.io" : baseUrl)
+                    .baseUrl(TextUtils.isEmpty(baseUrl) ? Defaults.DEFAULT_BASE_URL : baseUrl)
                     .build();
             UpdateCheckApi api = retrofit.create(UpdateCheckApi.class);
             Call<UpdateCheckResponse> call = api.checkUpdate(apiKey, request);
@@ -135,7 +143,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         switch (intent.getAction()) {
             case ACTION_CHECK:
                 checkUpdate(
-                        intent.getStringExtra(EXTRA_APIKEY),
+                        intent.getStringExtra(EXTRA_API_KEY),
                         intent.getStringExtra(EXTRA_URL),
                         intent.<UpdateCheckRequest>getParcelableExtra(EXTRA_REQUEST),
                         intent.getIntExtra(EXTRA_CALLBACK, 0)
