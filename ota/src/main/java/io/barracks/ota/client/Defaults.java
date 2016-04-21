@@ -22,5 +22,5 @@ package io.barracks.ota.client;
 public class Defaults {
     public static final String DEFAULT_BASE_URL = "https://barracks.io";
     public static final String DEFAULT_TMP_DL_DESTINATION = "update.tmp";
-    public static final String DEFAULT_FINAL_DL_DESTINATION = "update.tmp";
+    public static final String DEFAULT_FINAL_DL_DESTINATION = "update.final";
 }

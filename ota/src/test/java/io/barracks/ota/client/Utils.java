@@ -18,6 +18,11 @@ package io.barracks.ota.client;
 
 import android.os.Bundle;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.util.Set;
 
 /**
@@ -46,5 +51,22 @@ public class Utils {
         }
 
         return true;
+    }
+
+    public static Gson getRobolectricGson(GsonBuilder builder) {
+        return builder
+                .setExclusionStrategies(
+                        new ExclusionStrategy() {
+                            @Override
+                            public boolean shouldSkipField(FieldAttributes f) {
+                                return "__robo_data__".equals(f.getName());
+                            }
+
+                            @Override
+                            public boolean shouldSkipClass(Class<?> clazz) {
+                                return false;
+                            }
+                        }
+                ).create();
     }
 }

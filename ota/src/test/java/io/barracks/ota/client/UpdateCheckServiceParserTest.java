@@ -18,8 +18,6 @@ package io.barracks.ota.client;
 
 import android.os.Bundle;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -65,21 +63,7 @@ public class UpdateCheckServiceParserTest {
 
     private void checkJsonResponse(UpdateCheckService service) throws IOException {
         GsonBuilder builder = service.setUpGsonBuilder(new GsonBuilder());
-        Gson gson = builder
-                .setExclusionStrategies(
-                        new ExclusionStrategy() {
-                            @Override
-                            public boolean shouldSkipField(FieldAttributes f) {
-                                return "__robo_data__".equals(f.getName());
-                            }
-
-                            @Override
-                            public boolean shouldSkipClass(Class<?> clazz) {
-                                return false;
-                            }
-                        }
-                )
-                .create();
+        Gson gson = Utils.getRobolectricGson(builder);
         ClassLoader.getSystemResource("update_check_response_success.json");
         File f = new File(ClassLoader.getSystemResource("update_check_response_success.json").getPath());
         UpdateCheckResponse response = gson.fromJson(new FileReader(f), UpdateCheckResponse.class);

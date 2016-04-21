@@ -35,12 +35,13 @@ import io.barracks.ota.client.api.UpdateCheckResponse;
 import io.barracks.ota.client.api.UpdateDownloadApi;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 
 /**
  * Created by saiimons on 16-04-20.
  */
-public class UpdateDownloadService extends IntentService {
+public class PackageDownloadService extends IntentService {
     public static final String ACTION_DOWNLOAD_PACKAGE = "io.barracks.ota.client.DOWNLOAD_PACKAGE";
     public static final String EXTRA_UPDATE_RESPONSE = "update_response";
     public static final String EXTRA_API_KEY = "apiKey";
@@ -61,12 +62,16 @@ public class UpdateDownloadService extends IntentService {
         ACTION_DOWNLOAD_PACKAGE_FILTER.addCategory(DOWNLOAD_PROGRESS);
     }
 
+    public PackageDownloadService() {
+        this(PackageDownloadService.class.getSimpleName());
+    }
+
     /**
      * Creates an IntentService.  Invoked by your subclass's constructor.
      *
      * @param name Used to name the worker thread, important only for debugging.
      */
-    public UpdateDownloadService(String name) {
+    public PackageDownloadService(String name) {
         super(name);
     }
 
@@ -103,7 +108,12 @@ public class UpdateDownloadService extends IntentService {
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(tmp));
-            InputStream is = call.execute().body().byteStream();
+            Response<ResponseBody> response = call.execute();
+            if (!response.isSuccessful()) {
+                notifyError(new Exception(response.code() + " " + response.message()));
+                return;
+            }
+            InputStream is = response.body().byteStream();
             reader = new BufferedReader(new InputStreamReader(is));
             int read;
             char buff[] = new char[1024];
@@ -188,9 +198,9 @@ public class UpdateDownloadService extends IntentService {
     }
 
     private class Binder extends android.os.Binder {
-        UpdateDownloadService getService() {
+        PackageDownloadService getService() {
             // TODO return a wrapper exposing only the necessary methods
-            return UpdateDownloadService.this;
+            return PackageDownloadService.this;
         }
     }
 }
