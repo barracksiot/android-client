@@ -124,7 +124,6 @@ public class PackageDownloadServiceTest {
         url.setAccessible(true);
         url.set(info, server.url("/success").toString());
 
-
         info = failureResponse.getPackageInfo();
         url = PackageInfo.class.getDeclaredField("url");
         url.setAccessible(true);
@@ -151,6 +150,18 @@ public class PackageDownloadServiceTest {
         );
         manager.unregisterReceiver(callbackSuccess);
         assertTrue(callbackSuccess.success);
+    }
+
+    @Test
+    public void downloadProgress() throws IOException, NoSuchFieldException, IllegalAccessException {
+        CallBackProgress callBackProgress = new CallBackProgress();
+        manager.registerReceiver(callBackProgress, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
+        service.onHandleIntent(
+                new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, successResponse)
+        );
+        manager.unregisterReceiver(callBackProgress);
+        assertTrue(callBackProgress.progress);
     }
 
     @Test
@@ -271,6 +282,27 @@ public class PackageDownloadServiceTest {
                             && intent.hasCategory(PackageDownloadService.DOWNLOAD_ERROR)
                     ) {
                 failure = true;
+            }
+        }
+    }
+
+    private static class CallBackProgress extends BroadcastReceiver {
+        private boolean progress = false;
+        private int last = 0;
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (
+                    intent.getAction().equals(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
+                            && intent.hasCategory(PackageDownloadService.DOWNLOAD_PROGRESS)
+                    ) {
+                int current = intent.getIntExtra(PackageDownloadService.EXTRA_PROGRESS, -1);
+                if (current == last || current == last + 1) {
+                    progress = true;
+                    last = current;
+                } else {
+                    progress = false;
+                }
             }
         }
     }

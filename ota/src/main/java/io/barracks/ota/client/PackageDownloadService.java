@@ -23,13 +23,11 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.OutputStream;
 
 import io.barracks.ota.client.api.UpdateCheckResponse;
 import io.barracks.ota.client.api.UpdateDownloadApi;
@@ -48,6 +46,7 @@ public class PackageDownloadService extends IntentService {
     public static final String EXTRA_TMP_DEST = "tmpDest";
     public static final String EXTRA_FINAL_DEST = "finalDest";
     public static final String EXTRA_EXCEPTION = "exception";
+    public static final String EXTRA_PROGRESS = "progress";
     public static final int MSG_PAUSE_DOWNLOAD = 1;
     public static final int MSG_CANCEL_DOWNLOAD = 2;
     public static final String DOWNLOAD_SUCCESS = "io.barracks.ota.client.DOWNLOAD_SUCCESS";
@@ -104,37 +103,30 @@ public class PackageDownloadService extends IntentService {
         }
 
         // Initiate the transfer
-        BufferedReader reader = null;
-        BufferedWriter writer = null;
+        OutputStream os = null;
         try {
-            writer = new BufferedWriter(new FileWriter(tmp));
+            os = new FileOutputStream(tmp);
             Response<ResponseBody> response = call.execute();
             if (!response.isSuccessful()) {
                 notifyError(new Exception(response.code() + " " + response.message()));
                 return;
             }
             InputStream is = response.body().byteStream();
-            reader = new BufferedReader(new InputStreamReader(is));
             int read;
-            char buff[] = new char[1024];
-            while ((read = reader.read(buff)) != -1) {
-                writer.write(buff, 0, read);
-                // TODO Notify progress
+            int total = 0;
+            byte buff[] = new byte[1024];
+            while ((read = is.read(buff)) != -1) {
+                os.write(buff, 0, read);
+                total += read;
+                notifyProgress((int) (total * 100 / update.getPackageInfo().getSize()));
             }
         } catch (IOException e) {
             notifyError(e);
             return;
         } finally {
-            if (reader != null) {
+            if (os != null) {
                 try {
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (writer != null) {
-                try {
-                    writer.close();
+                    os.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -170,6 +162,15 @@ public class PackageDownloadService extends IntentService {
         );
     }
 
+    private void notifyProgress(int progress) {
+        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
+        manager.sendBroadcast(
+                new Intent(ACTION_DOWNLOAD_PACKAGE)
+                        .addCategory(DOWNLOAD_PROGRESS)
+                        .putExtra(EXTRA_PROGRESS, progress)
+        );
+    }
+
     protected boolean setupFile(File tmp) {
         // Check if the destination exists
         if (tmp.exists()) {
@@ -183,12 +184,12 @@ public class PackageDownloadService extends IntentService {
     }
 
     protected boolean checkPackageIntegrity(UpdateCheckResponse response, File f) {
-
+        // TODO
         return true;
     }
 
     protected boolean moveToFinalDestination(File tmp, File destination) {
-
+        // TODO
         return true;
     }
 
