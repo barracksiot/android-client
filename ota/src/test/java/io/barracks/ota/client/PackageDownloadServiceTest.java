@@ -20,9 +20,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import android.util.Log;
 
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +34,6 @@ import org.robolectric.util.ServiceController;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
 
@@ -62,7 +59,7 @@ public class PackageDownloadServiceTest {
     ServiceController<PackageDownloadService> controller;
     PackageDownloadService service;
     MockWebServer server;
-    UpdateCheckResponse successResponse, failureResponse, ioErrorResponse;
+    UpdateCheckResponse successResponse, failureResponse, ioErrorResponse, signatureFailResponse;
 
     @Before
     public void prepare() throws IOException, NoSuchFieldException, IllegalAccessException {
@@ -70,12 +67,10 @@ public class PackageDownloadServiceTest {
         controller = Robolectric.buildService(PackageDownloadService.class);
         service = controller.attach().create().get();
         server = new MockWebServer();
-        UpdateCheckService checkService = new UpdateCheckService();
-        Gson gson = Utils.getRobolectricGson(checkService.setUpGsonBuilder(new GsonBuilder()));
-        File f = new File(ClassLoader.getSystemResource("download_success.json").getPath());
-        successResponse = gson.fromJson(new FileReader(f), UpdateCheckResponse.class);
-        failureResponse = gson.fromJson(new FileReader(f), UpdateCheckResponse.class);
-        ioErrorResponse = gson.fromJson(new FileReader(f), UpdateCheckResponse.class);
+        successResponse = Utils.getUpdateCheckResponseFromFile("download_success.json");
+        failureResponse = Utils.getUpdateCheckResponseFromFile("download_success.json");
+        ioErrorResponse = Utils.getUpdateCheckResponseFromFile("download_success.json");
+        signatureFailResponse = Utils.getUpdateCheckResponseFromFile("download_success.json");
 
         final MockResponse success = new MockResponse()
                 .setBody(
@@ -108,10 +103,13 @@ public class PackageDownloadServiceTest {
         server.setDispatcher(new Dispatcher() {
             @Override
             public MockResponse dispatch(RecordedRequest recordedRequest) throws InterruptedException {
-                if (recordedRequest.getPath().equals("/failure")) {
+                String path = recordedRequest.getPath();
+                if ("/failure".equals(path)) {
                     return failure;
-                } else if (recordedRequest.getPath().equals("/ioerror")) {
+                } else if ("/ioerror".equals(path)) {
                     return ioerror;
+                } else if ("/signature".equals(path)) {
+                    return success;
                 } else {
                     return success;
                 }
@@ -133,6 +131,14 @@ public class PackageDownloadServiceTest {
         url = PackageInfo.class.getDeclaredField("url");
         url.setAccessible(true);
         url.set(info, server.url("/ioerror").toString());
+
+        info = signatureFailResponse.getPackageInfo();
+        url = PackageInfo.class.getDeclaredField("url");
+        url.setAccessible(true);
+        url.set(info, server.url("/signature").toString());
+        Field md5 = PackageInfo.class.getDeclaredField("md5");
+        md5.setAccessible(true);
+        md5.set(info, "md5failure");
     }
 
     @After
@@ -255,6 +261,16 @@ public class PackageDownloadServiceTest {
         );
         assertTrue(callbackFailure.failure);
         manager.unregisterReceiver(callbackFailure);
+
+
+        callbackFailure = new CallbackFailure();
+        manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
+        service.onHandleIntent(
+                new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, signatureFailResponse)
+        );
+        assertTrue(callbackFailure.failure);
+        manager.unregisterReceiver(callbackFailure);
     }
 
     private static class CallbackSuccess extends BroadcastReceiver {
@@ -303,6 +319,8 @@ public class PackageDownloadServiceTest {
                 } else {
                     progress = false;
                 }
+            } else {
+                Log.e("FAIL", intent.toString());
             }
         }
     }

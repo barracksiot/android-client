@@ -24,10 +24,16 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.DigestException;
+import java.security.DigestInputStream;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import io.barracks.ota.client.api.UpdateCheckResponse;
 import io.barracks.ota.client.api.UpdateDownloadApi;
@@ -47,11 +53,12 @@ public class PackageDownloadService extends IntentService {
     public static final String EXTRA_FINAL_DEST = "finalDest";
     public static final String EXTRA_EXCEPTION = "exception";
     public static final String EXTRA_PROGRESS = "progress";
+    public static final String EXTRA_CALLBACK = "callback";
     public static final int MSG_PAUSE_DOWNLOAD = 1;
     public static final int MSG_CANCEL_DOWNLOAD = 2;
     public static final String DOWNLOAD_SUCCESS = "io.barracks.ota.client.DOWNLOAD_SUCCESS";
     public static final String DOWNLOAD_ERROR = "io.barracks.ota.client.DOWNLOAD_ERROR";
-    public static final String DOWNLOAD_PROGRESS = "io.barracks.ota.client.DOWNLOAD_ERROR";
+    public static final String DOWNLOAD_PROGRESS = "io.barracks.ota.client.DOWNLOAD_PROGRESS";
     public static final IntentFilter ACTION_DOWNLOAD_PACKAGE_FILTER;
 
     static {
@@ -82,14 +89,14 @@ public class PackageDownloadService extends IntentService {
                         intent.getStringExtra(EXTRA_API_KEY),
                         intent.getStringExtra(EXTRA_TMP_DEST),
                         intent.getStringExtra(EXTRA_FINAL_DEST),
-                        intent.<UpdateCheckResponse>getParcelableExtra(EXTRA_UPDATE_RESPONSE)
+                        intent.<UpdateCheckResponse>getParcelableExtra(EXTRA_UPDATE_RESPONSE),
+                        intent.getIntExtra(EXTRA_CALLBACK, -1)
                 );
                 break;
         }
     }
 
-    private void downloadPackage(String apiKey, String tmpDest, String finalDest, UpdateCheckResponse update) {
-        // TODO make a utility function or class to get the temporary and final default locations easily
+    private void downloadPackage(String apiKey, String tmpDest, String finalDest, UpdateCheckResponse update, int callback) {
         File tmp = TextUtils.isEmpty(tmpDest) ? new File(getFilesDir(), Defaults.DEFAULT_TMP_DL_DESTINATION) : new File(tmpDest);
         File destination = TextUtils.isEmpty(finalDest) ? new File(getFilesDir(), Defaults.DEFAULT_FINAL_DL_DESTINATION) : new File(finalDest);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(Defaults.DEFAULT_BASE_URL).build();
@@ -98,7 +105,7 @@ public class PackageDownloadService extends IntentService {
 
         // Setup the files to be loaded and moved
         if (!setupFile(tmp) || !setupFile(destination)) {
-            notifyError(new Exception("Failed to setup " + tmp.getPath() + " or " + destination.getPath()));
+            notifyError(new Exception("Failed to setup " + tmp.getPath() + " or " + destination.getPath()), callback);
             return;
         }
 
@@ -108,7 +115,7 @@ public class PackageDownloadService extends IntentService {
             os = new FileOutputStream(tmp);
             Response<ResponseBody> response = call.execute();
             if (!response.isSuccessful()) {
-                notifyError(new Exception(response.code() + " " + response.message()));
+                notifyError(new Exception(response.code() + " " + response.message()), callback);
                 return;
             }
             InputStream is = response.body().byteStream();
@@ -118,10 +125,12 @@ public class PackageDownloadService extends IntentService {
             while ((read = is.read(buff)) != -1) {
                 os.write(buff, 0, read);
                 total += read;
-                notifyProgress((int) (total * 100 / update.getPackageInfo().getSize()));
+                notifyProgress((int) (total * 100 / update.getPackageInfo().getSize()), callback);
             }
-        } catch (IOException e) {
-            notifyError(e);
+            checkPackageIntegrity(update, tmp);
+            moveToFinalDestination(tmp, destination);
+        } catch (IOException | GeneralSecurityException e) {
+            notifyError(e, callback);
             return;
         } finally {
             if (os != null) {
@@ -132,41 +141,37 @@ public class PackageDownloadService extends IntentService {
                 }
             }
         }
-        if (!checkPackageIntegrity(update, tmp)) {
-            notifyError(new Exception("Failed to check package integrity."));
-            return;
-        }
-        if (!moveToFinalDestination(tmp, destination)) {
-            notifyError(new Exception("Failed to move package from " + tmp.getPath() + " to " + destination.getPath()));
-            return;
-        }
-        notifySuccess(update, destination);
+
+        notifySuccess(update, destination, callback);
     }
 
-    private void notifySuccess(UpdateCheckResponse response, File destination) {
+    private void notifySuccess(UpdateCheckResponse response, File destination, int callback) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.sendBroadcast(
                 new Intent(ACTION_DOWNLOAD_PACKAGE)
                         .addCategory(DOWNLOAD_SUCCESS)
                         .putExtra(EXTRA_UPDATE_RESPONSE, response)
+                        .putExtra(EXTRA_CALLBACK, callback)
                         .putExtra(EXTRA_FINAL_DEST, destination.getPath())
         );
     }
 
-    private void notifyError(Exception exception) {
+    private void notifyError(Exception exception, int callback) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.sendBroadcast(
                 new Intent(ACTION_DOWNLOAD_PACKAGE)
                         .addCategory(DOWNLOAD_ERROR)
+                        .putExtra(EXTRA_CALLBACK, callback)
                         .putExtra(EXTRA_EXCEPTION, exception)
         );
     }
 
-    private void notifyProgress(int progress) {
+    private void notifyProgress(int progress, int callback) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.sendBroadcast(
                 new Intent(ACTION_DOWNLOAD_PACKAGE)
                         .addCategory(DOWNLOAD_PROGRESS)
+                        .putExtra(EXTRA_CALLBACK, callback)
                         .putExtra(EXTRA_PROGRESS, progress)
         );
     }
@@ -183,14 +188,70 @@ public class PackageDownloadService extends IntentService {
         return (tmpParent.mkdirs() || tmpParent.exists()) && tmpParent.isDirectory();
     }
 
-    protected boolean checkPackageIntegrity(UpdateCheckResponse response, File f) {
-        // TODO
-        return true;
+    protected void checkPackageIntegrity(UpdateCheckResponse response, File f) throws IOException, GeneralSecurityException {
+        InputStream is = null;
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("MD5");
+            is = new FileInputStream(f);
+            is = new DigestInputStream(is, md);
+            byte[] buffer = new byte[8192];
+            while (is.read(buffer) != -1) {
+            }
+        } catch (NoSuchAlgorithmException | IOException e) {
+            throw e;
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        if (md != null) {
+            byte[] digest = md.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
+            }
+            if (!sb.toString().equals(response.getPackageInfo().getMd5())) {
+                throw new DigestException("Wrong file signature " + sb.toString() + " - " + response.getPackageInfo().getMd5());
+            }
+        }
     }
 
-    protected boolean moveToFinalDestination(File tmp, File destination) {
-        // TODO
-        return true;
+    protected void moveToFinalDestination(File tmp, File destination) throws IOException {
+        if (!tmp.renameTo(destination)) {
+            FileInputStream fis = null;
+            FileOutputStream fos = null;
+            try {
+                fis = new FileInputStream(tmp);
+                fos = new FileOutputStream(destination);
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = fis.read(buffer)) != -1) {
+                    fos.write(buffer, 0, read);
+                }
+            } catch (IOException e) {
+                throw e;
+            } finally {
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (fos != null) {
+                    try {
+                        fos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
 
     @Override
