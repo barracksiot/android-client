@@ -18,69 +18,123 @@ package io.barracks.ota.sample;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.Formatter;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import io.barracks.ota.client.api.UpdateCheckRequest;
 import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.helper.PackageDownloadCallback;
+import io.barracks.ota.client.helper.PackageDownloadHelper;
 import io.barracks.ota.client.helper.UpdateCheckCallback;
 import io.barracks.ota.client.helper.UpdateCheckHelper;
 
 public class CheckUpdateActivity extends AppCompatActivity {
 
     private static final String TAG = CheckUpdateActivity.class.getSimpleName();
-    private UpdateCheckHelper helper;
-    private Button check;
+    private UpdateCheckHelper updateCheckHelper;
+    private PackageDownloadHelper packageDownloadHelper;
+    private Button check, download;
     private EditText version;
+    private TextView details;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_update);
         check = (Button) findViewById(R.id.btn_check);
+        download = (Button) findViewById(R.id.btn_download);
         version = (EditText) findViewById(R.id.version);
+        details = (TextView) findViewById(R.id.package_details);
+        progressBar = (ProgressBar) findViewById(R.id.progress);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        helper = new UpdateCheckHelper("deadbeef", "http://integration-01.barracks.io/");
-        helper.bind(this, new UpdateCheckCallback() {
+
+        updateCheckHelper = new UpdateCheckHelper("deadbeef", "http://integration-01.barracks.io/");
+        updateCheckHelper.bind(this, new UpdateCheckCallback() {
             @Override
             public void onUpdateAvailable(UpdateCheckResponse response) {
-                Toast.makeText(CheckUpdateActivity.this, "Update available: " + response.getVersionId(), Toast.LENGTH_SHORT).show();
+                details.setText(getString(
+                        R.string.update_description,
+                        response.getVersionId(),
+                        Formatter.formatFileSize(CheckUpdateActivity.this, response.getPackageInfo().getSize()))
+                );
+                details.setTag(response);
             }
 
             @Override
             public void onUpdateUnavailable() {
-                Toast.makeText(CheckUpdateActivity.this, "Update unavailable", Toast.LENGTH_SHORT).show();
+                details.setText(getString(R.string.update_unavailable));
+                details.setTag(null);
             }
 
             @Override
             public void onUpdateRequestError(Throwable t) {
-                Toast.makeText(CheckUpdateActivity.this, "Update check failed " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                details.setText(getString(R.string.update_check_error, t.getMessage()));
+                details.setTag(null);
             }
         });
+
+        packageDownloadHelper = new PackageDownloadHelper("deadbeef");
+        packageDownloadHelper.bind(this, new PackageDownloadCallback() {
+            @Override
+            public void onDownloadSuccess(UpdateCheckResponse response) {
+                progressBar.setProgress(0);
+            }
+
+            @Override
+            public void onDownloadFailure(Throwable throwable) {
+                progressBar.setProgress(0);
+            }
+
+            @Override
+            public void onDownloadProgress(UpdateCheckResponse response, int progress) {
+                progressBar.setProgress(progress);
+            }
+        });
+
         check.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        helper.requestUpdate(
-                                new UpdateCheckRequest.Builder()
-                                        .versionId(version.getText().toString())
-                                        .unitId("bond007")
-                                        .build()
-                        );
+                        try {
+                            updateCheckHelper.requestUpdate(
+                                    new UpdateCheckRequest.Builder()
+                                            .versionId(version.getText().toString())
+                                            .unitId("bond007")
+                                            .build()
+                            );
+                        } catch (Exception e) {
+                            details.setText(getString(R.string.update_check_error, e.getMessage()));
+                        }
                     }
                 }
         );
+
+        download.setOnClickListener(
+                new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+
+                    }
+                }
+        );
+
+
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        helper.unbind(this);
+        updateCheckHelper.unbind(this);
+        packageDownloadHelper.unbind(this);
     }
 }
