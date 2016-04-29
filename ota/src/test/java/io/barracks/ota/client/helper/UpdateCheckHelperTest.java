@@ -29,8 +29,8 @@ import org.robolectric.annotation.Config;
 
 import io.barracks.client.ota.BuildConfig;
 import io.barracks.ota.client.UpdateCheckService;
-import io.barracks.ota.client.api.UpdateCheckRequest;
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetailsRequest;
+import io.barracks.ota.client.api.UpdateDetails;
 
 /**
  * Created by saiimons on 16-04-07.
@@ -84,7 +84,7 @@ public class UpdateCheckHelperTest {
 
     @Test
     public void service() {
-        UpdateCheckRequest request = new UpdateCheckRequest.Builder()
+        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
                 .unitId("HAL")
                 .versionId("42")
                 .build();
@@ -97,7 +97,7 @@ public class UpdateCheckHelperTest {
         Assert.assertEquals(intent.getComponent().getClassName(), UpdateCheckService.class.getName());
         Assert.assertEquals(intent.getAction(), UpdateCheckService.ACTION_CHECK);
         Assert.assertEquals(callback.hashCode(), intent.getIntExtra(UpdateCheckService.EXTRA_CALLBACK, 0));
-        UpdateCheckRequest request2 = intent.getParcelableExtra(UpdateCheckService.EXTRA_REQUEST);
+        UpdateDetailsRequest request2 = intent.getParcelableExtra(UpdateCheckService.EXTRA_REQUEST);
         Assert.assertNotNull(request2);
         helper.unbind(RuntimeEnvironment.application);
     }
@@ -107,7 +107,7 @@ public class UpdateCheckHelperTest {
         boolean unavailable = false;
         boolean error = false;
 
-        public void onUpdateAvailable(UpdateCheckResponse response) {
+        public void onUpdateAvailable(UpdateDetails response) {
             available = true;
         }
 

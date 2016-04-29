@@ -32,7 +32,7 @@ import java.io.FileNotFoundException;
 import io.barracks.client.ota.BuildConfig;
 import io.barracks.ota.client.PackageDownloadService;
 import io.barracks.ota.client.Utils;
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetails;
 
 /**
  * Created by saiimons on 27/04/2016.
@@ -87,7 +87,7 @@ public class PackageDownloadHelperTest {
 
     @Test
     public void service() throws FileNotFoundException {
-        UpdateCheckResponse response = Utils.getUpdateCheckResponseFromFile("download_success.json");
+        UpdateDetails response = Utils.getUpdateDetailsFromFile("download_success.json");
         TestCallback callback = new TestCallback();
         PackageDownloadHelper helper = new PackageDownloadHelper("deadbeef");
         helper.bind(RuntimeEnvironment.application, callback);
@@ -97,7 +97,7 @@ public class PackageDownloadHelperTest {
         Assert.assertEquals(intent.getComponent().getClassName(), PackageDownloadService.class.getName());
         Assert.assertEquals(intent.getAction(), PackageDownloadService.ACTION_DOWNLOAD_PACKAGE);
         Assert.assertEquals(callback.hashCode(), intent.getIntExtra(PackageDownloadService.EXTRA_CALLBACK, 0));
-        UpdateCheckResponse response2 = intent.getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE);
+        UpdateDetails response2 = intent.getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE);
         Assert.assertNotNull(response2);
         helper.unbind(RuntimeEnvironment.application);
     }
@@ -108,7 +108,7 @@ public class PackageDownloadHelperTest {
         boolean failure = false;
 
         @Override
-        public void onDownloadSuccess(UpdateCheckResponse response) {
+        public void onDownloadSuccess(UpdateDetails response, String path) {
             success = true;
         }
 
@@ -118,7 +118,7 @@ public class PackageDownloadHelperTest {
         }
 
         @Override
-        public void onDownloadProgress(UpdateCheckResponse response, int progress) {
+        public void onDownloadProgress(UpdateDetails response, int progress) {
             this.progress = true;
         }
     }

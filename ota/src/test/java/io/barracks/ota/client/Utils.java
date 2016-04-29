@@ -28,7 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Set;
 
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetails;
 
 /**
  * Created by saiimons on 16-04-12.
@@ -75,10 +75,10 @@ public class Utils {
                 ).create();
     }
 
-    public static UpdateCheckResponse getUpdateCheckResponseFromFile(String filename) throws FileNotFoundException {
+    public static UpdateDetails getUpdateDetailsFromFile(String filename) throws FileNotFoundException {
         UpdateCheckService checkService = new UpdateCheckService();
         Gson gson = Utils.getRobolectricGson(checkService.setUpGsonBuilder(new GsonBuilder()));
         File f = new File(ClassLoader.getSystemResource(filename).getPath());
-        return gson.fromJson(new FileReader(f), UpdateCheckResponse.class);
+        return gson.fromJson(new FileReader(f), UpdateDetails.class);
     }
 }

@@ -40,9 +40,9 @@ import io.barracks.client.ota.BuildConfig;
  */
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 23)
-public class UpdateCheckResponseTest {
+public class UpdateDetailsTest {
 
-    public static void assertValues(UpdateCheckResponse response) {
+    public static void assertValues(UpdateDetails response) {
         Assert.assertNotNull(response);
         Assert.assertTrue("42".equals(response.getVersionId()));
         Assert.assertTrue("http://barracks.io/".equals(response.getPackageInfo().getUrl()));
@@ -50,7 +50,7 @@ public class UpdateCheckResponseTest {
         Assert.assertEquals(21432144324324322L, response.getPackageInfo().getSize().longValue());
     }
 
-    private UpdateCheckResponse parseFromResources() throws IOException {
+    private UpdateDetails parseFromResources() throws IOException {
         Gson gson = new GsonBuilder()
                 .setExclusionStrategies(
                         new ExclusionStrategy() {
@@ -68,25 +68,25 @@ public class UpdateCheckResponseTest {
                 .create();
         ClassLoader.getSystemResource("update_check_response_success.json");
         File f = new File(ClassLoader.getSystemResource("update_check_response_success.json").getPath());
-        return gson.fromJson(new FileReader(f), UpdateCheckResponse.class);
+        return gson.fromJson(new FileReader(f), UpdateDetails.class);
     }
 
     @Test
     public void parseSuccess() throws IOException {
-        UpdateCheckResponse response = parseFromResources();
+        UpdateDetails response = parseFromResources();
         assertValues(response);
     }
 
     @Test
     public void parcel() throws IOException {
-        UpdateCheckResponse response = parseFromResources();
+        UpdateDetails response = parseFromResources();
 
         Parcel parcel = Parcel.obtain();
         response.writeToParcel(parcel, 0);
 
         parcel.setDataPosition(0);
 
-        response = UpdateCheckResponse.CREATOR.createFromParcel(parcel);
+        response = UpdateDetails.CREATOR.createFromParcel(parcel);
         assertValues(response);
     }
 

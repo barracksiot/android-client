@@ -26,5 +26,5 @@ import retrofit2.http.POST;
  */
 public interface UpdateCheckApi {
     @POST("/device/update/check")
-    Call<UpdateCheckResponse> checkUpdate(@Header("Authorization") String key, @Body UpdateCheckRequest request);
+    Call<UpdateDetails> checkUpdate(@Header("Authorization") String key, @Body UpdateDetailsRequest request);
 }

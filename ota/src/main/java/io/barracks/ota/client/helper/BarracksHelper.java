@@ -16,15 +16,29 @@
 
 package io.barracks.ota.client.helper;
 
-import io.barracks.ota.client.api.UpdateDetails;
+import io.barracks.ota.client.Defaults;
 
 /**
- * Created by saiimons on 16-04-05.
+ * Created by saiimons on 29/04/2016.
  */
-public interface UpdateCheckCallback {
-    void onUpdateAvailable(UpdateDetails response);
+public class BarracksHelper {
+    private final String apiKey;
+    private final String baseUrl;
 
-    void onUpdateUnavailable();
+    public BarracksHelper(String apiKey) {
+        this(apiKey, Defaults.DEFAULT_BASE_URL);
+    }
 
-    void onUpdateRequestError(Throwable t);
+    public BarracksHelper(String apiKey, String baseUrl) {
+        this.apiKey = apiKey;
+        this.baseUrl = baseUrl;
+    }
+
+    public UpdateCheckHelper getUpdateCheckHelper() {
+        return new UpdateCheckHelper(apiKey, baseUrl);
+    }
+
+    public PackageDownloadHelper getPackageDownloadHelper() {
+        return new PackageDownloadHelper(apiKey);
+    }
 }

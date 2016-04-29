@@ -35,7 +35,7 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetails;
 import io.barracks.ota.client.api.UpdateDownloadApi;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -89,14 +89,14 @@ public class PackageDownloadService extends IntentService {
                         intent.getStringExtra(EXTRA_API_KEY),
                         intent.getStringExtra(EXTRA_TMP_DEST),
                         intent.getStringExtra(EXTRA_FINAL_DEST),
-                        intent.<UpdateCheckResponse>getParcelableExtra(EXTRA_UPDATE_RESPONSE),
+                        intent.<UpdateDetails>getParcelableExtra(EXTRA_UPDATE_RESPONSE),
                         intent.getIntExtra(EXTRA_CALLBACK, -1)
                 );
                 break;
         }
     }
 
-    private void downloadPackage(String apiKey, String tmpDest, String finalDest, UpdateCheckResponse update, int callback) {
+    private void downloadPackage(String apiKey, String tmpDest, String finalDest, UpdateDetails update, int callback) {
         File tmp = TextUtils.isEmpty(tmpDest) ? new File(getFilesDir(), Defaults.DEFAULT_TMP_DL_DESTINATION) : new File(tmpDest);
         File destination = TextUtils.isEmpty(finalDest) ? new File(getFilesDir(), Defaults.DEFAULT_FINAL_DL_DESTINATION) : new File(finalDest);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(Defaults.DEFAULT_BASE_URL).build();
@@ -105,7 +105,7 @@ public class PackageDownloadService extends IntentService {
 
         // Setup the files to be loaded and moved
         if (!setupFile(tmp) || !setupFile(destination)) {
-            notifyError(new Exception("Failed to setup " + tmp.getPath() + " or " + destination.getPath()), callback);
+            notifyError(new IOException("Failed to setup " + tmp.getPath() + " or " + destination.getPath()), callback);
             return;
         }
 
@@ -115,7 +115,7 @@ public class PackageDownloadService extends IntentService {
             os = new FileOutputStream(tmp);
             Response<ResponseBody> response = call.execute();
             if (!response.isSuccessful()) {
-                notifyError(new Exception(response.code() + " " + response.message()), callback);
+                notifyError(new IOException("Call to : " + call.request().url().toString() + " failed : " + response.code() + " " + response.message()), callback);
                 return;
             }
             InputStream is = response.body().byteStream();
@@ -145,7 +145,7 @@ public class PackageDownloadService extends IntentService {
         notifySuccess(update, destination, callback);
     }
 
-    private void notifySuccess(UpdateCheckResponse response, File destination, int callback) {
+    private void notifySuccess(UpdateDetails response, File destination, int callback) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.sendBroadcast(
                 new Intent(ACTION_DOWNLOAD_PACKAGE)
@@ -188,7 +188,7 @@ public class PackageDownloadService extends IntentService {
         return (tmpParent.mkdirs() || tmpParent.exists()) && tmpParent.isDirectory();
     }
 
-    protected void checkPackageIntegrity(UpdateCheckResponse response, File f) throws IOException, GeneralSecurityException {
+    protected void checkPackageIntegrity(UpdateDetails response, File f) throws IOException, GeneralSecurityException {
         InputStream is = null;
         MessageDigest md = null;
         try {

@@ -39,7 +39,7 @@ import java.lang.reflect.Field;
 
 import io.barracks.client.ota.BuildConfig;
 import io.barracks.ota.client.api.PackageInfo;
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetails;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -59,7 +59,7 @@ public class PackageDownloadServiceTest {
     ServiceController<PackageDownloadService> controller;
     PackageDownloadService service;
     MockWebServer server;
-    UpdateCheckResponse successResponse, failureResponse, ioErrorResponse, signatureFailResponse;
+    UpdateDetails successResponse, failureResponse, ioErrorResponse, signatureFailResponse;
 
     @Before
     public void prepare() throws IOException, NoSuchFieldException, IllegalAccessException {
@@ -67,10 +67,10 @@ public class PackageDownloadServiceTest {
         controller = Robolectric.buildService(PackageDownloadService.class);
         service = controller.attach().create().get();
         server = new MockWebServer();
-        successResponse = Utils.getUpdateCheckResponseFromFile("download_success.json");
-        failureResponse = Utils.getUpdateCheckResponseFromFile("download_success.json");
-        ioErrorResponse = Utils.getUpdateCheckResponseFromFile("download_success.json");
-        signatureFailResponse = Utils.getUpdateCheckResponseFromFile("download_success.json");
+        successResponse = Utils.getUpdateDetailsFromFile("download_success.json");
+        failureResponse = Utils.getUpdateDetailsFromFile("download_success.json");
+        ioErrorResponse = Utils.getUpdateDetailsFromFile("download_success.json");
+        signatureFailResponse = Utils.getUpdateDetailsFromFile("download_success.json");
 
         final MockResponse success = new MockResponse()
                 .setBody(

@@ -22,8 +22,8 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
 import io.barracks.ota.client.UpdateCheckService;
-import io.barracks.ota.client.api.UpdateCheckRequest;
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetailsRequest;
+import io.barracks.ota.client.api.UpdateDetails;
 
 /**
  * Created by saiimons on 16-04-05.
@@ -52,7 +52,7 @@ public class UpdateCheckHelper extends BroadcastReceiver {
                     if (intent.hasCategory(UpdateCheckService.UPDATE_REQUEST_ERROR)) {
                         callback.onUpdateRequestError((Throwable) intent.getSerializableExtra(UpdateCheckService.EXTRA_EXCEPTION));
                     } else if (intent.hasCategory(UpdateCheckService.UPDATE_AVAILABLE)) {
-                        callback.onUpdateAvailable((UpdateCheckResponse) intent.getParcelableExtra(UpdateCheckService.EXTRA_RESPONSE));
+                        callback.onUpdateAvailable((UpdateDetails) intent.getParcelableExtra(UpdateCheckService.EXTRA_RESPONSE));
                     } else if (intent.hasCategory(UpdateCheckService.UPDATE_UNAVAILABLE)) {
                         callback.onUpdateUnavailable();
                     }
@@ -75,7 +75,7 @@ public class UpdateCheckHelper extends BroadcastReceiver {
         this.callback = null;
     }
 
-    public void requestUpdate(UpdateCheckRequest request) {
+    public void requestUpdate(UpdateDetailsRequest request) {
         Intent intent = new Intent(context, UpdateCheckService.class)
                 .setAction(UpdateCheckService.ACTION_CHECK)
                 .putExtra(UpdateCheckService.EXTRA_API_KEY, apiKey)

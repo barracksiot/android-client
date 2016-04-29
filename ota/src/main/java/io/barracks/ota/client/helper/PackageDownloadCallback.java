@@ -16,15 +16,15 @@
 
 package io.barracks.ota.client.helper;
 
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetails;
 
 /**
  * Created by saiimons on 27/04/2016.
  */
 public interface PackageDownloadCallback {
-    void onDownloadSuccess(UpdateCheckResponse response);
+    void onDownloadSuccess(UpdateDetails response, String path);
 
     void onDownloadFailure(Throwable throwable);
 
-    void onDownloadProgress(UpdateCheckResponse response, int progress);
+    void onDownloadProgress(UpdateDetails response, int progress);
 }

@@ -32,6 +32,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name="io.barracks.ota.client.UpdateCheckService"
+            android:enabled="true"
+            android:exported="false" />
+        <service
+            android:name="io.barracks.ota.client.PackageDownloadService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

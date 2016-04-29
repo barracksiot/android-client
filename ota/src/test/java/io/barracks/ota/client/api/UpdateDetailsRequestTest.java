@@ -33,35 +33,35 @@ import io.barracks.ota.client.Utils;
  */
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 23)
-public class UpdateCheckRequestTest {
+public class UpdateDetailsRequestTest {
     private static final String DEFAULT_UNIT_ID = "deadbeef";
     private static final String DEFAULT_VERSION_ID = "42";
 
     @Test(expected = IllegalStateException.class)
     public void missingParameter() {
-        new UpdateCheckRequest.Builder().build();
+        new UpdateDetailsRequest.Builder().build();
     }
 
     @Test(expected = IllegalStateException.class)
     public void missingUnitId() {
-        new UpdateCheckRequest.Builder()
+        new UpdateDetailsRequest.Builder()
                 .versionId(DEFAULT_VERSION_ID)
                 .build();
     }
 
     @Test(expected = IllegalStateException.class)
     public void missingVersionId() {
-        new UpdateCheckRequest.Builder()
+        new UpdateDetailsRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
                 .build();
     }
 
     @Test
     public void correctRequest() {
-        UpdateCheckRequest request;
+        UpdateDetailsRequest request;
         Bundle properties = new Bundle();
         properties.putString("string", "toto");
-        request = new UpdateCheckRequest.Builder()
+        request = new UpdateDetailsRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
                 .versionId(DEFAULT_VERSION_ID)
                 .properties(properties)
@@ -71,7 +71,7 @@ public class UpdateCheckRequestTest {
         Assert.assertEquals(DEFAULT_VERSION_ID, request.getVersionId());
         Assert.assertTrue(Utils.compareBundles(properties, request.getProperties()));
 
-        request = new UpdateCheckRequest.Builder()
+        request = new UpdateDetailsRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
                 .versionId(DEFAULT_VERSION_ID)
                 .build();
@@ -83,7 +83,7 @@ public class UpdateCheckRequestTest {
     public void parcel() {
         Bundle properties = new Bundle();
         properties.putString("string", "toto");
-        UpdateCheckRequest request = new UpdateCheckRequest.Builder()
+        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
                 .versionId(DEFAULT_VERSION_ID)
                 .properties(properties)
@@ -92,7 +92,7 @@ public class UpdateCheckRequestTest {
         request.writeToParcel(parcel, 0);
 
         parcel.setDataPosition(0);
-        UpdateCheckRequest createdFromParcel = UpdateCheckRequest.CREATOR.createFromParcel(parcel);
+        UpdateDetailsRequest createdFromParcel = UpdateDetailsRequest.CREATOR.createFromParcel(parcel);
         Assert.assertEquals(request.getUnitId(), createdFromParcel.getUnitId());
         Assert.assertEquals(request.getVersionId(), createdFromParcel.getVersionId());
         Assert.assertTrue(Utils.compareBundles(properties, request.getProperties()));

@@ -25,8 +25,9 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import io.barracks.ota.client.api.UpdateCheckRequest;
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetails;
+import io.barracks.ota.client.api.UpdateDetailsRequest;
+import io.barracks.ota.client.helper.BarracksHelper;
 import io.barracks.ota.client.helper.PackageDownloadCallback;
 import io.barracks.ota.client.helper.PackageDownloadHelper;
 import io.barracks.ota.client.helper.UpdateCheckCallback;
@@ -57,10 +58,12 @@ public class CheckUpdateActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        updateCheckHelper = new UpdateCheckHelper("deadbeef", "http://integration-01.barracks.io/");
+        BarracksHelper helper = new BarracksHelper("deadbeef", "http://integration-01.barracks.io/");
+
+        updateCheckHelper = helper.getUpdateCheckHelper();
         updateCheckHelper.bind(this, new UpdateCheckCallback() {
             @Override
-            public void onUpdateAvailable(UpdateCheckResponse response) {
+            public void onUpdateAvailable(UpdateDetails response) {
                 details.setText(getString(
                         R.string.update_description,
                         response.getVersionId(),
@@ -82,10 +85,10 @@ public class CheckUpdateActivity extends AppCompatActivity {
             }
         });
 
-        packageDownloadHelper = new PackageDownloadHelper("deadbeef");
+        packageDownloadHelper = helper.getPackageDownloadHelper();
         packageDownloadHelper.bind(this, new PackageDownloadCallback() {
             @Override
-            public void onDownloadSuccess(UpdateCheckResponse response) {
+            public void onDownloadSuccess(UpdateDetails response, String path) {
                 progressBar.setProgress(0);
             }
 
@@ -95,7 +98,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onDownloadProgress(UpdateCheckResponse response, int progress) {
+            public void onDownloadProgress(UpdateDetails response, int progress) {
                 progressBar.setProgress(progress);
             }
         });
@@ -106,7 +109,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         try {
                             updateCheckHelper.requestUpdate(
-                                    new UpdateCheckRequest.Builder()
+                                    new UpdateDetailsRequest.Builder()
                                             .versionId(version.getText().toString())
                                             .unitId("bond007")
                                             .build()

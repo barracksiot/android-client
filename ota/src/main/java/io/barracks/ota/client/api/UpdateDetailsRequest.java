@@ -24,16 +24,16 @@ import android.text.TextUtils;
 /**
  * Created by saiimons on 16-04-05.
  */
-public class UpdateCheckRequest implements Parcelable {
-    public static final Creator<UpdateCheckRequest> CREATOR = new Creator<UpdateCheckRequest>() {
+public class UpdateDetailsRequest implements Parcelable {
+    public static final Creator<UpdateDetailsRequest> CREATOR = new Creator<UpdateDetailsRequest>() {
         @Override
-        public UpdateCheckRequest createFromParcel(Parcel in) {
-            return new UpdateCheckRequest(in);
+        public UpdateDetailsRequest createFromParcel(Parcel in) {
+            return new UpdateDetailsRequest(in);
         }
 
         @Override
-        public UpdateCheckRequest[] newArray(int size) {
-            return new UpdateCheckRequest[size];
+        public UpdateDetailsRequest[] newArray(int size) {
+            return new UpdateDetailsRequest[size];
         }
     };
 
@@ -41,13 +41,13 @@ public class UpdateCheckRequest implements Parcelable {
     private final String versionId;
     private final Bundle properties;
 
-    protected UpdateCheckRequest(Parcel in) {
+    protected UpdateDetailsRequest(Parcel in) {
         unitId = in.readString();
         versionId = in.readString();
         properties = in.readBundle(getClass().getClassLoader());
     }
 
-    private UpdateCheckRequest(String unitId, String versionId, Bundle properties) {
+    private UpdateDetailsRequest(String unitId, String versionId, Bundle properties) {
         this.unitId = unitId;
         this.versionId = versionId;
         this.properties = properties;
@@ -101,14 +101,14 @@ public class UpdateCheckRequest implements Parcelable {
             return this;
         }
 
-        public UpdateCheckRequest build() {
+        public UpdateDetailsRequest build() {
             if (TextUtils.isEmpty(unitId)) {
                 throw new IllegalStateException("Unit ID is required");
             }
             if (TextUtils.isEmpty(versionId)) {
                 throw new IllegalStateException("Version ID is required");
             }
-            return new UpdateCheckRequest(unitId, versionId, properties);
+            return new UpdateDetailsRequest(unitId, versionId, properties);
         }
     }
 }

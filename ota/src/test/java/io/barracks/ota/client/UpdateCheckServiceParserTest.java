@@ -39,8 +39,8 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import io.barracks.client.ota.BuildConfig;
-import io.barracks.ota.client.api.UpdateCheckResponse;
-import io.barracks.ota.client.api.UpdateCheckResponseTest;
+import io.barracks.ota.client.api.UpdateDetails;
+import io.barracks.ota.client.api.UpdateDetailsTest;
 
 /**
  * Created by saiimons on 16-04-07.
@@ -66,17 +66,17 @@ public class UpdateCheckServiceParserTest {
         Gson gson = Utils.getRobolectricGson(builder);
         ClassLoader.getSystemResource("update_check_response_success.json");
         File f = new File(ClassLoader.getSystemResource("update_check_response_success.json").getPath());
-        UpdateCheckResponse response = gson.fromJson(new FileReader(f), UpdateCheckResponse.class);
-        UpdateCheckResponseTest.assertValues(response);
+        UpdateDetails response = gson.fromJson(new FileReader(f), UpdateDetails.class);
+        UpdateDetailsTest.assertValues(response);
         assertProperties(response);
 
         String json = gson.toJson(response);
-        response = gson.fromJson(json, UpdateCheckResponse.class);
-        UpdateCheckResponseTest.assertValues(response);
+        response = gson.fromJson(json, UpdateDetails.class);
+        UpdateDetailsTest.assertValues(response);
         assertProperties(response);
     }
 
-    private void assertProperties(UpdateCheckResponse response) {
+    private void assertProperties(UpdateDetails response) {
         Bundle b = response.getProperties();
         Assert.assertTrue(b.getBoolean("boolean"));
         Assert.assertEquals(3.14159265d, b.getDouble("double"), 0.0d);
@@ -86,19 +86,19 @@ public class UpdateCheckServiceParserTest {
 
     private static final class CustomUpdateCheckService extends UpdateCheckService {
         @Override
-        protected TypeAdapter<UpdateCheckResponse> getResponsePropertiesAdapter(Gson gson, TypeToken<UpdateCheckResponse> type) {
+        protected TypeAdapter<UpdateDetails> getResponsePropertiesAdapter(Gson gson, TypeToken<UpdateDetails> type) {
             return new CustomPropertiesAdapter(this, gson, type);
         }
     }
 
     private static final class CustomPropertiesAdapter extends UpdateCheckService.DefaultResponseAdapter {
 
-        public CustomPropertiesAdapter(TypeAdapterFactory factory, Gson gson, TypeToken<UpdateCheckResponse> type) {
+        public CustomPropertiesAdapter(TypeAdapterFactory factory, Gson gson, TypeToken<UpdateDetails> type) {
             super(factory, gson, type);
         }
 
         @Override
-        public void write(JsonWriter out, UpdateCheckResponse response) throws IOException {
+        public void write(JsonWriter out, UpdateDetails response) throws IOException {
             JsonElement tree = getDelegate().toJsonTree(response);
             JsonObject obj = tree.getAsJsonObject();
             JsonObject properties = new JsonObject();
@@ -111,9 +111,9 @@ public class UpdateCheckServiceParserTest {
         }
 
         @Override
-        public UpdateCheckResponse read(JsonReader in) throws IOException {
+        public UpdateDetails read(JsonReader in) throws IOException {
             JsonElement tree = getElementAdapter().read(in);
-            UpdateCheckResponse response = getDelegate().fromJsonTree(tree);
+            UpdateDetails response = getDelegate().fromJsonTree(tree);
             response.getProperties().putString("string", "toto");
             response.getProperties().putLong("integer", 123);
             response.getProperties().putBoolean("boolean", true);

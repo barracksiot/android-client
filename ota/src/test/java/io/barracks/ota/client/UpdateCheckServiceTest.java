@@ -38,8 +38,8 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import io.barracks.client.ota.BuildConfig;
-import io.barracks.ota.client.api.UpdateCheckRequest;
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetailsRequest;
+import io.barracks.ota.client.api.UpdateDetails;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
@@ -91,7 +91,7 @@ public class UpdateCheckServiceTest {
         manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
         service.onHandleIntent(
                 new Intent(UpdateCheckService.ACTION_CHECK)
-                        .putExtra(UpdateCheckService.EXTRA_REQUEST, new UpdateCheckRequest.Builder().unitId("42").versionId("42").build())
+                        .putExtra(UpdateCheckService.EXTRA_REQUEST, new UpdateDetailsRequest.Builder().unitId("42").versionId("42").build())
         );
         manager.unregisterReceiver(testCallback);
         assertTrue(testCallback.failed);
@@ -130,7 +130,7 @@ public class UpdateCheckServiceTest {
 
         CallbackSuccess testCallback = new CallbackSuccess();
         manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
-        UpdateCheckRequest request = new UpdateCheckRequest.Builder()
+        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
                 .unitId("12")
                 .versionId("v0.1")
                 .build();
@@ -156,7 +156,7 @@ public class UpdateCheckServiceTest {
         );
         CallbackSuccess testCallback = new CallbackSuccess();
         manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
-        UpdateCheckRequest request = new UpdateCheckRequest.Builder()
+        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
                 .unitId("12")
                 .versionId("v0.1")
                 .build();
@@ -182,7 +182,7 @@ public class UpdateCheckServiceTest {
         );
         CallbackFailed testCallback = new CallbackFailed();
         manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
-        UpdateCheckRequest request = new UpdateCheckRequest.Builder()
+        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
                 .unitId("12")
                 .versionId("v0.1")
                 .build();
@@ -230,7 +230,7 @@ public class UpdateCheckServiceTest {
     }
 
     private static final class CallbackSuccess extends BroadcastReceiver {
-        UpdateCheckResponse response = null;
+        UpdateDetails response = null;
         boolean called = false;
 
         @Override

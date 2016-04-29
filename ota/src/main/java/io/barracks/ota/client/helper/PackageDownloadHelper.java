@@ -23,7 +23,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import io.barracks.ota.client.PackageDownloadService;
 import io.barracks.ota.client.UpdateCheckService;
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetails;
 
 /**
  * Created by saiimons on 26/04/2016.
@@ -45,9 +45,9 @@ public class PackageDownloadHelper extends BroadcastReceiver {
             case PackageDownloadService.ACTION_DOWNLOAD_PACKAGE:
                 if (callback.hashCode() == intent.getIntExtra(UpdateCheckService.EXTRA_CALLBACK, 0)) {
                     if (intent.hasCategory(PackageDownloadService.DOWNLOAD_PROGRESS)) {
-                        callback.onDownloadProgress(intent.<UpdateCheckResponse>getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE), intent.getIntExtra(PackageDownloadService.EXTRA_PROGRESS, 0));
+                        callback.onDownloadProgress(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE), intent.getIntExtra(PackageDownloadService.EXTRA_PROGRESS, 0));
                     } else if (intent.hasCategory(PackageDownloadService.DOWNLOAD_SUCCESS)) {
-                        callback.onDownloadSuccess(intent.<UpdateCheckResponse>getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE));
+                        callback.onDownloadSuccess(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE), intent.getStringExtra(PackageDownloadService.EXTRA_FINAL_DEST));
                     } else if (intent.hasCategory(PackageDownloadService.DOWNLOAD_ERROR)) {
                         callback.onDownloadFailure((Throwable) intent.getSerializableExtra(PackageDownloadService.EXTRA_EXCEPTION));
                     }
@@ -70,11 +70,11 @@ public class PackageDownloadHelper extends BroadcastReceiver {
         this.callback = null;
     }
 
-    public void requestDownload(UpdateCheckResponse response) {
+    public void requestDownload(UpdateDetails response) {
         requestDownload(response, null, null);
     }
 
-    public void requestDownload(UpdateCheckResponse response, String tmpFile, String finalFile) {
+    public void requestDownload(UpdateDetails response, String tmpFile, String finalFile) {
         Intent intent = new Intent(context, PackageDownloadService.class)
                 .setAction(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
                 .putExtra(PackageDownloadService.EXTRA_API_KEY, apiKey)

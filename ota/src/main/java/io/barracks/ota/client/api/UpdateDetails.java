@@ -23,16 +23,16 @@ import android.os.Parcelable;
 /**
  * Created by saiimons on 16-04-05.
  */
-public class UpdateCheckResponse implements Parcelable {
-    public static final Creator<UpdateCheckResponse> CREATOR = new Creator<UpdateCheckResponse>() {
+public class UpdateDetails implements Parcelable {
+    public static final Creator<UpdateDetails> CREATOR = new Creator<UpdateDetails>() {
         @Override
-        public UpdateCheckResponse createFromParcel(Parcel in) {
-            return new UpdateCheckResponse(in);
+        public UpdateDetails createFromParcel(Parcel in) {
+            return new UpdateDetails(in);
         }
 
         @Override
-        public UpdateCheckResponse[] newArray(int size) {
-            return new UpdateCheckResponse[size];
+        public UpdateDetails[] newArray(int size) {
+            return new UpdateDetails[size];
         }
     };
 
@@ -40,11 +40,11 @@ public class UpdateCheckResponse implements Parcelable {
     private PackageInfo packageInfo;
     private Bundle properties = new Bundle();
 
-    private UpdateCheckResponse() {
+    private UpdateDetails() {
 
     }
 
-    protected UpdateCheckResponse(Parcel in) {
+    protected UpdateDetails(Parcel in) {
         versionId = in.readString();
         packageInfo = in.readParcelable(getClass().getClassLoader());
         properties = in.readBundle(getClass().getClassLoader());

@@ -41,8 +41,8 @@ import java.util.Map;
 import java.util.Set;
 
 import io.barracks.ota.client.api.UpdateCheckApi;
-import io.barracks.ota.client.api.UpdateCheckRequest;
-import io.barracks.ota.client.api.UpdateCheckResponse;
+import io.barracks.ota.client.api.UpdateDetails;
+import io.barracks.ota.client.api.UpdateDetailsRequest;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -83,25 +83,29 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         super(name);
     }
 
-    private void checkUpdate(String apiKey, String baseUrl, UpdateCheckRequest request, int callback) {
+    private void checkUpdate(String apiKey, String baseUrl, UpdateDetailsRequest request, int callback) {
         Intent intent = new Intent(ACTION_CHECK);
+        intent.putExtra(EXTRA_CALLBACK, callback);
         try {
             if (TextUtils.isEmpty(apiKey)) {
-                throw new RuntimeException("Missing API key");
+                throw new IllegalArgumentException("Missing API key");
+            }
+            if (TextUtils.isEmpty(baseUrl)) {
+                throw new IllegalArgumentException("Missing base URL");
             }
             if (request == null) {
-                throw new RuntimeException("Missing request");
+                throw new IllegalArgumentException("Missing request");
             }
             GsonBuilder builder = new GsonBuilder();
             Retrofit retrofit = new Retrofit.Builder()
                     .addConverterFactory(GsonConverterFactory.create(setUpGsonBuilder(builder).create()))
-                    .baseUrl(TextUtils.isEmpty(baseUrl) ? Defaults.DEFAULT_BASE_URL : baseUrl)
+                    .baseUrl(baseUrl)
                     .build();
             UpdateCheckApi api = retrofit.create(UpdateCheckApi.class);
-            Call<UpdateCheckResponse> call = api.checkUpdate(apiKey, request);
-            Response<UpdateCheckResponse> response = call.execute();
+            Call<UpdateDetails> call = api.checkUpdate(apiKey, request);
+            Response<UpdateDetails> response = call.execute();
             if (response.isSuccessful()) {
-                UpdateCheckResponse update = response.body();
+                UpdateDetails update = response.body();
                 if (update == null) {
                     intent.addCategory(UPDATE_UNAVAILABLE);
                 } else {
@@ -115,7 +119,6 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             intent.addCategory(UPDATE_REQUEST_ERROR);
             intent.putExtra(UpdateCheckService.EXTRA_EXCEPTION, t);
         }
-        intent.putExtra(EXTRA_CALLBACK, callback);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
@@ -134,7 +137,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         return builder.registerTypeAdapterFactory(this);
     }
 
-    protected TypeAdapter<UpdateCheckResponse> getResponsePropertiesAdapter(Gson gson, TypeToken<UpdateCheckResponse> type) {
+    protected TypeAdapter<UpdateDetails> getResponsePropertiesAdapter(Gson gson, TypeToken<UpdateDetails> type) {
         return new DefaultResponseAdapter(this, gson, type);
     }
 
@@ -145,7 +148,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
                 checkUpdate(
                         intent.getStringExtra(EXTRA_API_KEY),
                         intent.getStringExtra(EXTRA_URL),
-                        intent.<UpdateCheckRequest>getParcelableExtra(EXTRA_REQUEST),
+                        intent.<UpdateDetailsRequest>getParcelableExtra(EXTRA_REQUEST),
                         intent.getIntExtra(EXTRA_CALLBACK, 0)
                 );
                 break;
@@ -154,23 +157,23 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
 
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-        if (type.getRawType() == UpdateCheckResponse.class) {
-            return (TypeAdapter<T>) getResponsePropertiesAdapter(gson, TypeToken.get(UpdateCheckResponse.class));
+        if (type.getRawType() == UpdateDetails.class) {
+            return (TypeAdapter<T>) getResponsePropertiesAdapter(gson, TypeToken.get(UpdateDetails.class));
         }
         return null;
     }
 
-    public static class DefaultResponseAdapter extends TypeAdapter<UpdateCheckResponse> {
-        private final TypeAdapter<UpdateCheckResponse> delegate;
+    public static class DefaultResponseAdapter extends TypeAdapter<UpdateDetails> {
+        private final TypeAdapter<UpdateDetails> delegate;
         private final TypeAdapter<JsonElement> elementAdapter;
 
-        public DefaultResponseAdapter(TypeAdapterFactory factory, Gson gson, TypeToken<UpdateCheckResponse> type) {
+        public DefaultResponseAdapter(TypeAdapterFactory factory, Gson gson, TypeToken<UpdateDetails> type) {
             delegate = gson.getDelegateAdapter(factory, type);
             elementAdapter = gson.getAdapter(JsonElement.class);
         }
 
         @Override
-        public void write(JsonWriter out, UpdateCheckResponse response) throws IOException {
+        public void write(JsonWriter out, UpdateDetails response) throws IOException {
             JsonElement tree = getDelegate().toJsonTree(response);
             JsonObject properties = new JsonObject();
             Set<String> keys = response.getProperties().keySet();
@@ -189,10 +192,10 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         }
 
         @Override
-        public UpdateCheckResponse read(JsonReader in) throws IOException {
+        public UpdateDetails read(JsonReader in) throws IOException {
             JsonElement tree = getElementAdapter().read(in);
             JsonObject obj = tree.getAsJsonObject();
-            UpdateCheckResponse response = getDelegate().fromJsonTree(tree);
+            UpdateDetails response = getDelegate().fromJsonTree(tree);
             JsonObject properties = obj.getAsJsonObject("properties");
             if (properties != null) {
                 for (Map.Entry<String, JsonElement> entry : properties.entrySet()) {
@@ -219,7 +222,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             return response;
         }
 
-        public TypeAdapter<UpdateCheckResponse> getDelegate() {
+        public TypeAdapter<UpdateDetails> getDelegate() {
             return delegate;
         }
 
