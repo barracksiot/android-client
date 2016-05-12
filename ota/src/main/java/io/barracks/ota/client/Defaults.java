@@ -17,10 +17,19 @@
 package io.barracks.ota.client;
 
 /**
- * Created by saiimons on 16-04-20.
+ * Constants used by the SDK by default
  */
 public class Defaults {
+    /**
+     * Defines the base URL for the Barracks platform
+     */
     public static final String DEFAULT_BASE_URL = "https://barracks.io";
+    /**
+     * Default temporary destination for the package download
+     */
     public static final String DEFAULT_TMP_DL_DESTINATION = "update.tmp";
+    /**
+     * Default final destination for the package download
+     */
     public static final String DEFAULT_FINAL_DL_DESTINATION = "update.final";
 }

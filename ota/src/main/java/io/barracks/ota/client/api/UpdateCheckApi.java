@@ -22,9 +22,16 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 /**
- * Created by saiimons on 16-04-05.
+ * This interface describes the call to the Barracks platform which requests {@link UpdateDetails}.
  */
 public interface UpdateCheckApi {
+    /**
+     * The call to the Barracks platform which requests {@link UpdateDetails}.
+     *
+     * @param key     The API key provided by the Barracks platform.
+     * @param request The {@link UpdateDetailsRequest request} parameters for the Barracks platform.
+     * @return A {@link Call} to execute in order to retrieve the {@link UpdateDetails}
+     */
     @POST("/device/update/check")
     Call<UpdateDetails> checkUpdate(@Header("Authorization") String key, @Body UpdateDetailsRequest request);
 }

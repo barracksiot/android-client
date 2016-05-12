@@ -88,7 +88,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
         packageDownloadHelper = helper.getPackageDownloadHelper();
         packageDownloadHelper.bind(this, new PackageDownloadCallback() {
             @Override
-            public void onDownloadSuccess(UpdateDetails response, String path) {
+            public void onDownloadSuccess(UpdateDetails details, String path) {
                 progressBar.setProgress(0);
             }
 
@@ -98,7 +98,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onDownloadProgress(UpdateDetails response, int progress) {
+            public void onDownloadProgress(UpdateDetails details, int progress) {
                 progressBar.setProgress(progress);
             }
         });
@@ -111,7 +111,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
                             updateCheckHelper.requestUpdate(
                                     new UpdateDetailsRequest.Builder()
                                             .versionId(version.getText().toString())
-                                            .unitId("bond007")
+                                            .unitId("moneypenny")
                                             .build()
                             );
                         } catch (Exception e) {
@@ -126,7 +126,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
 
                     @Override
                     public void onClick(View v) {
-
+                        packageDownloadHelper.requestDownload((UpdateDetails) details.getTag());
                     }
                 }
         );

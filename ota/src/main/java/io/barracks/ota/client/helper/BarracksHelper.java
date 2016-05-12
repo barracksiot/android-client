@@ -19,25 +19,53 @@ package io.barracks.ota.client.helper;
 import io.barracks.ota.client.Defaults;
 
 /**
- * Created by saiimons on 29/04/2016.
+ * Convenient access to the various helpers.
  */
 public class BarracksHelper {
+    /**
+     * The API key provided by the Barracks platform.
+     */
     private final String apiKey;
+    /**
+     * The url used to call the Barracks platform.
+     */
     private final String baseUrl;
 
+    /**
+     * Default constructor for the helper.<br/>
+     * The url is pointing to {@link Defaults#DEFAULT_BASE_URL}
+     *
+     * @param apiKey The API key provided by the Barracks platform.
+     */
     public BarracksHelper(String apiKey) {
         this(apiKey, Defaults.DEFAULT_BASE_URL);
     }
 
+    /**
+     * Advanced constructor for the helper.
+     *
+     * @param apiKey  The API key provided by the Barracks platform.
+     * @param baseUrl The url used to call the Barracks platform.
+     */
     public BarracksHelper(String apiKey, String baseUrl) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
     }
 
+    /**
+     * Access to a helper for making update requests to the Barracks platform.
+     *
+     * @return A properly configured {@link UpdateCheckHelper}
+     */
     public UpdateCheckHelper getUpdateCheckHelper() {
         return new UpdateCheckHelper(apiKey, baseUrl);
     }
 
+    /**
+     * Access to a helper for downloading packages.
+     *
+     * @return A properly configured {@link PackageDownloadHelper}
+     */
     public PackageDownloadHelper getPackageDownloadHelper() {
         return new PackageDownloadHelper(apiKey);
     }

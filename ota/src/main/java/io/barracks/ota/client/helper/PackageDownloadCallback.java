@@ -19,12 +19,30 @@ package io.barracks.ota.client.helper;
 import io.barracks.ota.client.api.UpdateDetails;
 
 /**
- * Created by saiimons on 27/04/2016.
+ * This callback interface is used when downloading a package using the {@link PackageDownloadHelper}.
  */
 public interface PackageDownloadCallback {
-    void onDownloadSuccess(UpdateDetails response, String path);
+    /**
+     * This method is called when the package has been successfully downloaded.
+     *
+     * @param details The details received from the Barracks platform.
+     * @param path    The path of the downloaded file.
+     */
+    void onDownloadSuccess(UpdateDetails details, String path);
 
-    void onDownloadFailure(Throwable throwable);
+    /**
+     * This method is called when the download fails.
+     *
+     * @param details   The details received from the Barracks platform.
+     * @param throwable The exception caught during the download.
+     */
+    void onDownloadFailure(UpdateDetails details, Throwable throwable);
 
-    void onDownloadProgress(UpdateDetails response, int progress);
+    /**
+     * This method is called during the download to inform the application about its progress.
+     *
+     * @param details  The details received from the Barracks platform.
+     * @param progress The percentage of progress.
+     */
+    void onDownloadProgress(UpdateDetails details, int progress);
 }

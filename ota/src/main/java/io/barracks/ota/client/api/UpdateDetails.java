@@ -21,9 +21,14 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Created by saiimons on 16-04-05.
+ * This class encapsulates the details about an update.<br/>
+ * It is a {@link Parcelable} which allows for it to be sent back and forth to the different
+ * services with the use of an {@link android.content.Intent Intent}
  */
 public class UpdateDetails implements Parcelable {
+    /**
+     * @see Parcelable
+     */
     public static final Creator<UpdateDetails> CREATOR = new Creator<UpdateDetails>() {
         @Override
         public UpdateDetails createFromParcel(Parcel in) {
@@ -36,37 +41,70 @@ public class UpdateDetails implements Parcelable {
         }
     };
 
+    /**
+     * The version ID of the update.
+     */
     private String versionId;
+    /**
+     * The {@link PackageInfo} describing the package to be downloaded.
+     */
     private PackageInfo packageInfo;
+    /**
+     * A set of user-defined properties.
+     */
     private Bundle properties = new Bundle();
 
     private UpdateDetails() {
 
     }
 
+    /**
+     * @see Parcelable
+     */
     protected UpdateDetails(Parcel in) {
         versionId = in.readString();
         packageInfo = in.readParcelable(getClass().getClassLoader());
         properties = in.readBundle(getClass().getClassLoader());
     }
 
+    /**
+     * Get the version ID of the update.
+     *
+     * @return the version ID of the update.
+     */
     public String getVersionId() {
         return versionId;
     }
 
+    /**
+     * Get the {@link PackageInfo} describing the package to be downloaded.
+     *
+     * @return the  {@link PackageInfo} describing the package to be downloaded.
+     */
     public PackageInfo getPackageInfo() {
         return packageInfo;
     }
 
+    /**
+     * Get the set of user-defined properties.
+     *
+     * @return the set of user-defined properties.
+     */
     public Bundle getProperties() {
         return properties;
     }
 
+    /**
+     * @see Parcelable
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * @see Parcelable
+     */
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(versionId);

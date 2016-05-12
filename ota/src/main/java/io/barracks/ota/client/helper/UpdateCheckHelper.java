@@ -22,11 +22,15 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
 import io.barracks.ota.client.UpdateCheckService;
-import io.barracks.ota.client.api.UpdateDetailsRequest;
 import io.barracks.ota.client.api.UpdateDetails;
+import io.barracks.ota.client.api.UpdateDetailsRequest;
 
 /**
- * Created by saiimons on 16-04-05.
+ * A helper which makes it easier to use the {@link UpdateCheckService}.
+ * <p>
+ * Use {@link #bind(Context, UpdateCheckCallback)} before requesting for an udpate,
+ * and {@link #unbind(Context)} when you are done using the helper.
+ * </p>
  */
 public class UpdateCheckHelper extends BroadcastReceiver {
     private static final String TAG = UpdateCheckHelper.class.getSimpleName();
@@ -35,32 +39,60 @@ public class UpdateCheckHelper extends BroadcastReceiver {
     private Context context;
     private UpdateCheckCallback callback;
 
+    /**
+     * Helper's contstructor.
+     *
+     * @param apiKey The API key provided by the Barracks platform.
+     */
     public UpdateCheckHelper(String apiKey) {
         this(apiKey, null);
     }
 
+    /**
+     * Helper's contstructor.
+     *
+     * @param apiKey  The API key provided by the Barracks platform.
+     * @param baseUrl The base URL for the Barracks platform.
+     */
     public UpdateCheckHelper(String apiKey, String baseUrl) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onReceive(Context context, Intent intent) {
         switch (intent.getAction()) {
             case UpdateCheckService.ACTION_CHECK:
                 if (callback.hashCode() == intent.getIntExtra(UpdateCheckService.EXTRA_CALLBACK, 0)) {
                     if (intent.hasCategory(UpdateCheckService.UPDATE_REQUEST_ERROR)) {
-                        callback.onUpdateRequestError((Throwable) intent.getSerializableExtra(UpdateCheckService.EXTRA_EXCEPTION));
+                        callback.onUpdateRequestError(
+                                (UpdateDetailsRequest) intent.getParcelableExtra(UpdateCheckService.EXTRA_REQUEST),
+                                (Throwable) intent.getSerializableExtra(UpdateCheckService.EXTRA_EXCEPTION)
+                        );
                     } else if (intent.hasCategory(UpdateCheckService.UPDATE_AVAILABLE)) {
-                        callback.onUpdateAvailable((UpdateDetails) intent.getParcelableExtra(UpdateCheckService.EXTRA_RESPONSE));
+                        callback.onUpdateAvailable(
+                                (UpdateDetailsRequest) intent.getParcelableExtra(UpdateCheckService.EXTRA_REQUEST),
+                                (UpdateDetails) intent.getParcelableExtra(UpdateCheckService.EXTRA_UPDATE_DETAILS)
+                        );
                     } else if (intent.hasCategory(UpdateCheckService.UPDATE_UNAVAILABLE)) {
-                        callback.onUpdateUnavailable();
+                        callback.onUpdateUnavailable(
+                                (UpdateDetailsRequest) intent.getParcelableExtra(UpdateCheckService.EXTRA_REQUEST)
+                        );
                     }
                 }
                 break;
         }
     }
 
+    /**
+     * Call this method to register your callback before checking for an update.
+     *
+     * @param context  The context.
+     * @param callback The {@link UpdateCheckCallback} which will be called during the request.
+     */
     public void bind(Context context, UpdateCheckCallback callback) {
         this.context = context;
         this.callback = callback;
@@ -68,6 +100,12 @@ public class UpdateCheckHelper extends BroadcastReceiver {
         manager.registerReceiver(this, UpdateCheckService.ACTION_CHECK_FILTER);
     }
 
+    /**
+     * Call this method to unregister your callback and free the resources when you are done with
+     * this helper.
+     *
+     * @param context The context.
+     */
     public void unbind(Context context) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
         manager.unregisterReceiver(this);
@@ -75,6 +113,11 @@ public class UpdateCheckHelper extends BroadcastReceiver {
         this.callback = null;
     }
 
+    /**
+     * Call this method to request details about an update to the Barracks platform.
+     *
+     * @param request The request to be sent to the Barracks platform.
+     */
     public void requestUpdate(UpdateDetailsRequest request) {
         Intent intent = new Intent(context, UpdateCheckService.class)
                 .setAction(UpdateCheckService.ACTION_CHECK)

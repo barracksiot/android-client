@@ -152,7 +152,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackSuccess, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
         );
         manager.unregisterReceiver(callbackSuccess);
         assertTrue(callbackSuccess.success);
@@ -164,7 +164,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callBackProgress, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
         );
         manager.unregisterReceiver(callBackProgress);
         assertTrue(callBackProgress.progress);
@@ -176,7 +176,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackSuccess, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
                         .putExtra(PackageDownloadService.EXTRA_TMP_DEST, new File("tmp/tmp.dl"))
                         .putExtra(PackageDownloadService.EXTRA_FINAL_DEST, new File("final/final.dl"))
         );
@@ -199,7 +199,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
                         .putExtra(PackageDownloadService.EXTRA_TMP_DEST, f.getPath())
         );
         assertTrue(callbackFailure.failure);
@@ -210,7 +210,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
                         .putExtra(PackageDownloadService.EXTRA_FINAL_DEST, f.getPath())
         );
         assertTrue(callbackFailure.failure);
@@ -221,7 +221,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
                         .putExtra(PackageDownloadService.EXTRA_TMP_DEST, new File(f, "dircantbe").getPath())
         );
         assertTrue(callbackFailure.failure);
@@ -234,7 +234,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
                         .putExtra(PackageDownloadService.EXTRA_FINAL_DEST, f.getPath())
         );
         assertTrue(callbackFailure.failure);
@@ -247,7 +247,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, failureResponse)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, failureResponse)
         );
         assertTrue(callbackFailure.failure);
         manager.unregisterReceiver(callbackFailure);
@@ -257,7 +257,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, ioErrorResponse)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, ioErrorResponse)
         );
         assertTrue(callbackFailure.failure);
         manager.unregisterReceiver(callbackFailure);
@@ -267,7 +267,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE, signatureFailResponse)
+                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, signatureFailResponse)
         );
         assertTrue(callbackFailure.failure);
         manager.unregisterReceiver(callbackFailure);

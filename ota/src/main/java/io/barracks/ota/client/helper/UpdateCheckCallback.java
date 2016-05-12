@@ -17,14 +17,32 @@
 package io.barracks.ota.client.helper;
 
 import io.barracks.ota.client.api.UpdateDetails;
+import io.barracks.ota.client.api.UpdateDetailsRequest;
 
 /**
- * Created by saiimons on 16-04-05.
+ * This callback interface is used when requesting to the Barracks platform using the {@link UpdateCheckHelper}.
  */
 public interface UpdateCheckCallback {
-    void onUpdateAvailable(UpdateDetails response);
+    /**
+     * This method is called when update details are available.
+     *
+     * @param request The request sent to the Barracks platform.
+     * @param details The details of the available update.
+     */
+    void onUpdateAvailable(UpdateDetailsRequest request, UpdateDetails details);
 
-    void onUpdateUnavailable();
+    /**
+     * This method is called when there is no update available.
+     *
+     * @param request The request sent to the Barracks platform.
+     */
+    void onUpdateUnavailable(UpdateDetailsRequest request);
 
-    void onUpdateRequestError(Throwable t);
+    /**
+     * This method is called when an error occured during the request.
+     *
+     * @param request The request sent to the Barracks platform.
+     * @param t       The exception caught during the request.
+     */
+    void onUpdateRequestError(UpdateDetailsRequest request, Throwable t);
 }

@@ -238,11 +238,11 @@ public class UpdateCheckServiceTest {
             if (
                     intent.getAction().equals(UpdateCheckService.ACTION_CHECK) &&
                             (
-                                    (intent.hasCategory(UpdateCheckService.UPDATE_AVAILABLE) && intent.hasExtra(UpdateCheckService.EXTRA_RESPONSE)) ||
+                                    (intent.hasCategory(UpdateCheckService.UPDATE_AVAILABLE) && intent.hasExtra(UpdateCheckService.EXTRA_UPDATE_DETAILS)) ||
                                             intent.hasCategory(UpdateCheckService.UPDATE_UNAVAILABLE)
                             )
                     ) {
-                response = intent.getParcelableExtra(UpdateCheckService.EXTRA_RESPONSE);
+                response = intent.getParcelableExtra(UpdateCheckService.EXTRA_UPDATE_DETAILS);
                 called = true;
             }
         }

@@ -29,8 +29,8 @@ import org.robolectric.annotation.Config;
 
 import io.barracks.client.ota.BuildConfig;
 import io.barracks.ota.client.UpdateCheckService;
-import io.barracks.ota.client.api.UpdateDetailsRequest;
 import io.barracks.ota.client.api.UpdateDetails;
+import io.barracks.ota.client.api.UpdateDetailsRequest;
 
 /**
  * Created by saiimons on 16-04-07.
@@ -107,17 +107,18 @@ public class UpdateCheckHelperTest {
         boolean unavailable = false;
         boolean error = false;
 
-        public void onUpdateAvailable(UpdateDetails response) {
+        @Override
+        public void onUpdateAvailable(UpdateDetailsRequest request, UpdateDetails details) {
             available = true;
         }
 
         @Override
-        public void onUpdateUnavailable() {
+        public void onUpdateUnavailable(UpdateDetailsRequest request) {
             unavailable = true;
         }
 
         @Override
-        public void onUpdateRequestError(Throwable t) {
+        public void onUpdateRequestError(UpdateDetailsRequest request, Throwable t) {
             error = true;
         }
     }

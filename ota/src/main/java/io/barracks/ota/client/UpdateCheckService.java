@@ -48,19 +48,66 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+/**
+ * This service is used to handle the request to the barracks service in the background.<br/>
+ * It uses the {@link LocalBroadcastManager} to send updates about the request, using the categories
+ * for {@link UpdateCheckService#UPDATE_AVAILABLE an available update},
+ * {@link UpdateCheckService#UPDATE_UNAVAILABLE no update available} and
+ * {@link UpdateCheckService#UPDATE_REQUEST_ERROR failure} for a defined {@link UpdateCheckService#ACTION_CHECK action}
+ *
+ * @see io.barracks.ota.client.helper.BarracksHelper
+ */
 public class UpdateCheckService extends IntentService implements TypeAdapterFactory {
+    /**
+     * Defines the action used to start the request to the Barracks platform.
+     *
+     * @see Intent#setAction(String)
+     */
     public static final String ACTION_CHECK = "io.barracks.ota.client.CHECK_UPDATE";
+
+    /**
+     * This key is used to specify the {@link UpdateDetailsRequest request} used as a reference
+     * to call the Barracks platform.
+     */
     public static final String EXTRA_REQUEST = "check_request";
+    /**
+     * This key is used to specify the url used to call the Barracks platform.
+     */
     public static final String EXTRA_URL = "url";
+    /**
+     * This key is used to specify the API key used for making a request to the Barracks platform.
+     */
     public static final String EXTRA_API_KEY = "apiKey";
 
+    /**
+     * Category used to notify when some {@link UpdateDetails} are available.
+     */
     public static final String UPDATE_AVAILABLE = "io.barracks.ota.client.UPDATE_AVAILABLE";
+    /**
+     * Category used to notify when no details are available.
+     */
     public static final String UPDATE_UNAVAILABLE = "io.barracks.ota.client.update_available.UPDATE_UNAVAILABLE";
+    /**
+     * Category used to notify when a request has failed.
+     */
     public static final String UPDATE_REQUEST_ERROR = "io.barracks.ota.client.update_available.UPDATE_REQUEST_ERROR";
 
+    /**
+     * This key is used to report an {@link Throwable exception} thrown during the request.
+     */
     public static final String EXTRA_EXCEPTION = "exception";
-    public static final String EXTRA_RESPONSE = "response";
+    /**
+     * This key is used to report the {@link UpdateDetails details} received from the Barracks platform.
+     */
+    public static final String EXTRA_UPDATE_DETAILS = "updateDetails";
+    /**
+     * This key is used to report the callback's identifier
+     */
     public static final String EXTRA_CALLBACK = "callback";
+
+    /**
+     * Intent filter used by {@link android.content.BroadcastReceiver} to register to the {@link LocalBroadcastManager}
+     */
     public static final IntentFilter ACTION_CHECK_FILTER;
 
     static {
@@ -75,7 +122,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     }
 
     /**
-     * Creates an IntentService.  Invoked by your subclass's constructor.
+     * Creates an {@link UpdateCheckService}.
      *
      * @param name Used to name the worker thread, important only for debugging.
      */
@@ -83,9 +130,35 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         super(name);
     }
 
+    /**
+     * @{inheritDoc}
+     */
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        switch (intent.getAction()) {
+            case ACTION_CHECK:
+                checkUpdate(
+                        intent.getStringExtra(EXTRA_API_KEY),
+                        intent.getStringExtra(EXTRA_URL),
+                        intent.<UpdateDetailsRequest>getParcelableExtra(EXTRA_REQUEST),
+                        intent.getIntExtra(EXTRA_CALLBACK, 0)
+                );
+                break;
+        }
+    }
+
+    /**
+     * This method processes the request and notifies the rest of the application using the {@link LocalBroadcastManager}.
+     *
+     * @param apiKey   The API key provided by the Barracks platform.
+     * @param baseUrl  The url used to call the Barracks platform
+     * @param request  The {@link UpdateDetailsRequest request} parameters for the Barracks platform.
+     * @param callback The callback identifier.
+     */
     private void checkUpdate(String apiKey, String baseUrl, UpdateDetailsRequest request, int callback) {
         Intent intent = new Intent(ACTION_CHECK);
         intent.putExtra(EXTRA_CALLBACK, callback);
+        intent.putExtra(EXTRA_REQUEST, request);
         try {
             if (TextUtils.isEmpty(apiKey)) {
                 throw new IllegalArgumentException("Missing API key");
@@ -110,7 +183,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
                     intent.addCategory(UPDATE_UNAVAILABLE);
                 } else {
                     intent.addCategory(UPDATE_AVAILABLE);
-                    intent.putExtra(EXTRA_RESPONSE, update);
+                    intent.putExtra(EXTRA_UPDATE_DETAILS, update);
                 }
             } else {
                 throw new RuntimeException(response.code() + " " + response.message());
@@ -122,6 +195,12 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    /**
+     * This method provides a {@link TypeAdapterFactory} - the service itself - for the {@link GsonBuilder}.
+     *
+     * @param builder The service's basic {@link GsonBuilder} which will be updated in this method.
+     * @return The updated {@link GsonBuilder}
+     */
     protected GsonBuilder setUpGsonBuilder(GsonBuilder builder) {
         builder.setExclusionStrategies(new ExclusionStrategy() {
             @Override
@@ -137,24 +216,23 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         return builder.registerTypeAdapterFactory(this);
     }
 
+    /**
+     * This method provides a {@link TypeAdapter} for the {@link UpdateDetails}.
+     * Override this method to provide a custom implementation, in order to fill the
+     * {@link UpdateDetails#properties properties bundle} with specific values.
+     *
+     * @param gson The {@link Gson} parser instance.
+     * @param type The {@link TypeToken} for the {@link UpdateDetails}
+     * @return The {@link TypeAdapter} for the {@link UpdateDetails}
+     * @see DefaultResponseAdapter The default implementation.
+     */
     protected TypeAdapter<UpdateDetails> getResponsePropertiesAdapter(Gson gson, TypeToken<UpdateDetails> type) {
         return new DefaultResponseAdapter(this, gson, type);
     }
 
-    @Override
-    protected void onHandleIntent(Intent intent) {
-        switch (intent.getAction()) {
-            case ACTION_CHECK:
-                checkUpdate(
-                        intent.getStringExtra(EXTRA_API_KEY),
-                        intent.getStringExtra(EXTRA_URL),
-                        intent.<UpdateDetailsRequest>getParcelableExtra(EXTRA_REQUEST),
-                        intent.getIntExtra(EXTRA_CALLBACK, 0)
-                );
-                break;
-        }
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
         if (type.getRawType() == UpdateDetails.class) {
@@ -163,8 +241,20 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         return null;
     }
 
+    /**
+     * The default {@link TypeAdapter} for the {@link UpdateDetails}.
+     *
+     * @see TypeAdapterFactory#create(Gson, TypeToken)
+     * @see UpdateCheckService#getResponsePropertiesAdapter(Gson, TypeToken)
+     */
     public static class DefaultResponseAdapter extends TypeAdapter<UpdateDetails> {
+        /**
+         * The delegate adapter is allowing us to parse the {@link UpdateDetails} basic fields.
+         */
         private final TypeAdapter<UpdateDetails> delegate;
+        /**
+         *
+         */
         private final TypeAdapter<JsonElement> elementAdapter;
 
         public DefaultResponseAdapter(TypeAdapterFactory factory, Gson gson, TypeToken<UpdateDetails> type) {
@@ -172,6 +262,10 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             elementAdapter = gson.getAdapter(JsonElement.class);
         }
 
+        /**
+         * This method provides basic support for properties : simple key/values are parsed.
+         * {@inheritDoc}
+         */
         @Override
         public void write(JsonWriter out, UpdateDetails response) throws IOException {
             JsonElement tree = getDelegate().toJsonTree(response);
@@ -191,6 +285,10 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             getElementAdapter().write(out, tree);
         }
 
+        /**
+         * This method provides basic support for properties : simple key/values are parsed.
+         * {@inheritDoc}
+         */
         @Override
         public UpdateDetails read(JsonReader in) throws IOException {
             JsonElement tree = getElementAdapter().read(in);

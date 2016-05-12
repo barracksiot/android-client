@@ -24,9 +24,16 @@ import retrofit2.http.Streaming;
 import retrofit2.http.Url;
 
 /**
- * Created by saiimons on 16-04-20.
+ * This interface describes the call to the Barracks platform which downloads a package.
  */
 public interface UpdateDownloadApi {
+    /**
+     * The call to the Barracks platform which downloads a package.
+     *
+     * @param url The url of the package.
+     * @param key The API key provided by the Barracks platform.
+     * @return A {@link Call} to execute in order to download the package.
+     */
     @GET()
     @Streaming
     Call<ResponseBody> downloadUpdate(@Url String url, @Header("Authorization") String key);

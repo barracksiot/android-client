@@ -97,7 +97,7 @@ public class PackageDownloadHelperTest {
         Assert.assertEquals(intent.getComponent().getClassName(), PackageDownloadService.class.getName());
         Assert.assertEquals(intent.getAction(), PackageDownloadService.ACTION_DOWNLOAD_PACKAGE);
         Assert.assertEquals(callback.hashCode(), intent.getIntExtra(PackageDownloadService.EXTRA_CALLBACK, 0));
-        UpdateDetails response2 = intent.getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_RESPONSE);
+        UpdateDetails response2 = intent.getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS);
         Assert.assertNotNull(response2);
         helper.unbind(RuntimeEnvironment.application);
     }
@@ -108,17 +108,17 @@ public class PackageDownloadHelperTest {
         boolean failure = false;
 
         @Override
-        public void onDownloadSuccess(UpdateDetails response, String path) {
+        public void onDownloadSuccess(UpdateDetails details, String path) {
             success = true;
         }
 
         @Override
-        public void onDownloadFailure(Throwable throwable) {
+        public void onDownloadFailure(UpdateDetails details, Throwable throwable) {
             failure = true;
         }
 
         @Override
-        public void onDownloadProgress(UpdateDetails response, int progress) {
+        public void onDownloadProgress(UpdateDetails details, int progress) {
             this.progress = true;
         }
     }

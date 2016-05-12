@@ -20,10 +20,15 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Created by saiimons on 16-04-19.
+ * This class encapsulates the details about an update package.<br/>
+ * It is a {@link Parcelable} which allows for it to be sent back and forth to the different
+ * services with the use of an {@link android.content.Intent Intent}
  */
 public class PackageInfo implements Parcelable {
 
+    /**
+     * @see Parcelable
+     */
     public static final Creator<PackageInfo> CREATOR = new Creator<PackageInfo>() {
         @Override
         public PackageInfo createFromParcel(Parcel in) {
@@ -35,21 +40,36 @@ public class PackageInfo implements Parcelable {
             return new PackageInfo[size];
         }
     };
-    private String url;
-    private String md5;
-    private Long size;
 
+    /**
+     * The url to call for downloading the package.
+     */
+    private String url;
+    /**
+     * The MD5 hash of the package.
+     */
+    private String md5;
+    /**
+     * The size of the package.
+     */
+    private Long size;
 
     private PackageInfo() {
 
     }
 
+    /**
+     * @see Parcelable
+     */
     protected PackageInfo(Parcel in) {
         url = in.readString();
         md5 = in.readString();
         size = in.readLong();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(url);
@@ -57,19 +77,37 @@ public class PackageInfo implements Parcelable {
         dest.writeLong(size);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int describeContents() {
         return 0;
     }
 
+    /**
+     * Get the url to call for downloading the package.
+     *
+     * @return the url to call for downloading the package.
+     */
     public String getUrl() {
         return url;
     }
 
+    /**
+     * Get the MD5 hash of the package.
+     *
+     * @return the MD5 hash of the package.
+     */
     public String getMd5() {
         return md5;
     }
 
+    /**
+     * Get the size of the package.
+     *
+     * @return the size of the package.
+     */
     public Long getSize() {
         return size;
     }
