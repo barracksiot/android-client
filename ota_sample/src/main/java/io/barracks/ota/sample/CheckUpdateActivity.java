@@ -63,7 +63,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
         updateCheckHelper = helper.getUpdateCheckHelper();
         updateCheckHelper.bind(this, new UpdateCheckCallback() {
             @Override
-            public void onUpdateAvailable(UpdateDetails response) {
+            public void onUpdateAvailable(UpdateDetailsRequest request, UpdateDetails response) {
                 details.setText(getString(
                         R.string.update_description,
                         response.getVersionId(),
@@ -73,13 +73,13 @@ public class CheckUpdateActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onUpdateUnavailable() {
+            public void onUpdateUnavailable(UpdateDetailsRequest request) {
                 details.setText(getString(R.string.update_unavailable));
                 details.setTag(null);
             }
 
             @Override
-            public void onUpdateRequestError(Throwable t) {
+            public void onUpdateRequestError(UpdateDetailsRequest request, Throwable t) {
                 details.setText(getString(R.string.update_check_error, t.getMessage()));
                 details.setTag(null);
             }
@@ -93,7 +93,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onDownloadFailure(Throwable throwable) {
+            public void onDownloadFailure(UpdateDetails details, Throwable throwable) {
                 progressBar.setProgress(0);
             }
 
