@@ -49,7 +49,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * This service is used to handle the request to the barracks service in the background.<br/>
+ * This service is used to handle the request to the barracks service in the background.<br>
  * It uses the {@link LocalBroadcastManager} to send updates about the request, using the categories
  * for {@link UpdateCheckService#UPDATE_AVAILABLE an available update},
  * {@link UpdateCheckService#UPDATE_UNAVAILABLE no update available} and
@@ -131,7 +131,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     }
 
     /**
-     * @{inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     protected void onHandleIntent(Intent intent) {

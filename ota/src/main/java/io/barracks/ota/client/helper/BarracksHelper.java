@@ -32,7 +32,7 @@ public class BarracksHelper {
     private final String baseUrl;
 
     /**
-     * Default constructor for the helper.<br/>
+     * Default constructor for the helper.<br>
      * The url is pointing to {@link Defaults#DEFAULT_BASE_URL}
      *
      * @param apiKey The API key provided by the Barracks platform.

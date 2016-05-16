@@ -43,7 +43,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 /**
- * This service is used to handle the download of a package in the background.<br/>
+ * This service is used to handle the download of a package in the background.<br>
  * It uses the {@link LocalBroadcastManager} to send updates of the download, using the categories
  * for {@link PackageDownloadService#DOWNLOAD_SUCCESS success},
  * {@link PackageDownloadService#DOWNLOAD_PROGRESS progress} and
@@ -127,7 +127,7 @@ public class PackageDownloadService extends IntentService {
     }
 
     /**
-     * @{inheritDoc}
+     * {@inheritDoc}
      */
     @Override
     protected void onHandleIntent(Intent intent) {
@@ -276,13 +276,13 @@ public class PackageDownloadService extends IntentService {
     }
 
     /**
-     * This method checks the package's <code>file</code> integrity.<br/>
+     * This method checks the package's <code>file</code> integrity.<br>
      * It uses the md5 provided in the <code>details</code> parameter.
      *
      * @param details The {@link UpdateDetails} retrieved from the Barracks platform.
      * @param file    The file which was downloaded.
-     * @throws IOException
-     * @throws GeneralSecurityException
+     * @throws IOException              If an exception is raised while accessing the file.
+     * @throws GeneralSecurityException If the hash verification fails.
      */
     protected void checkPackageIntegrity(UpdateDetails details, File file) throws IOException, GeneralSecurityException {
         InputStream is = null;
@@ -318,7 +318,7 @@ public class PackageDownloadService extends IntentService {
     }
 
     /**
-     * This method moves the <code>temporary</code> file to its <code>destination</code>.<br/>
+     * This method moves the <code>temporary</code> file to its <code>destination</code>.<br>
      * If the file can't be moved, the method tries to copy it.
      *
      * @param temporary   The temporary file.

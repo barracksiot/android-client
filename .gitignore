@@ -33,6 +33,7 @@ gradle-app.setting
 bin/
 gen/
 out/
+javadoc/
 
 # Gradle files
 .gradle/

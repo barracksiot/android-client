@@ -20,7 +20,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * This class encapsulates the details about an update package.<br/>
+ * This class encapsulates the details about an update package.<br>
  * It is a {@link Parcelable} which allows for it to be sent back and forth to the different
  * services with the use of an {@link android.content.Intent Intent}
  */
@@ -59,6 +59,9 @@ public class PackageInfo implements Parcelable {
     }
 
     /**
+     * Parcelable constructor
+     *
+     * @param in The parcel to read from.
      * @see Parcelable
      */
     protected PackageInfo(Parcel in) {

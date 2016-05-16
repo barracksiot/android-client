@@ -22,8 +22,8 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 
 /**
- * This class encapsulates parameters to request {@link UpdateDetails} to the Barracks service.<br/>
- * It comes with a convenient {@link Builder Builder} which creates and verifies the validity of the request<br/>
+ * This class encapsulates parameters to request {@link UpdateDetails} to the Barracks service.<br>
+ * It comes with a convenient {@link Builder Builder} which creates and verifies the validity of the request<br>
  * It is a {@link Parcelable} which allows for it to be sent back and forth to the different
  * services with the use of an {@link android.content.Intent Intent}.
  */
@@ -57,6 +57,9 @@ public class UpdateDetailsRequest implements Parcelable {
     private final Bundle properties;
 
     /**
+     * Parcelable constructor
+     *
+     * @param in The parcel to read from.
      * @see Parcelable
      */
     protected UpdateDetailsRequest(Parcel in) {
@@ -120,7 +123,7 @@ public class UpdateDetailsRequest implements Parcelable {
     }
 
     /**
-     * A convenient builder to create an {@link UpdateDetailsRequest}.<br/>
+     * A convenient builder to create an {@link UpdateDetailsRequest}.<br>
      * This class provides a verification mechanism when creating
      */
     public static final class Builder {
