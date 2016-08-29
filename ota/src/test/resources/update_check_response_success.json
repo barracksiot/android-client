@@ -5,7 +5,7 @@
     "md5": "deadbeef",
     "size": 21432144324324322
   },
-  "customClientData": {
+  "properties": {
     "string": "toto",
     "integer": 123,
     "boolean": true,

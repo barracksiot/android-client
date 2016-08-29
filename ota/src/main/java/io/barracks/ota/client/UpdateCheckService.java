@@ -219,7 +219,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     /**
      * This method provides a {@link TypeAdapter} for the {@link UpdateDetails}.
      * Override this method to provide a custom implementation, in order to fill the
-     * {@link UpdateDetails#customClientData customClientData bundle} with specific values.
+     * {@link UpdateDetails#properties properties bundle} with specific values.
      *
      * @param gson The {@link Gson} parser instance.
      * @param type The {@link TypeToken} for the {@link UpdateDetails}
@@ -269,19 +269,19 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         @Override
         public void write(JsonWriter out, UpdateDetails response) throws IOException {
             JsonElement tree = getDelegate().toJsonTree(response);
-            JsonObject customClientData = new JsonObject();
-            Set<String> keys = response.getCustomClientData().keySet();
+            JsonObject properties = new JsonObject();
+            Set<String> keys = response.getProperties().keySet();
             for (String key : keys) {
-                Object value = response.getCustomClientData().get(key);
+                Object value = response.getProperties().get(key);
                 if (Boolean.class.isInstance(value)) {
-                    customClientData.addProperty(key, (Boolean) value);
+                    properties.addProperty(key, (Boolean) value);
                 } else if (String.class.isInstance(value)) {
-                    customClientData.addProperty(key, (String) value);
+                    properties.addProperty(key, (String) value);
                 } else if (Number.class.isInstance(value)) {
-                    customClientData.addProperty(key, (Number) value);
+                    properties.addProperty(key, (Number) value);
                 }
             }
-            tree.getAsJsonObject().add("customClientData", customClientData);
+            tree.getAsJsonObject().add("properties", properties);
             getElementAdapter().write(out, tree);
         }
 
@@ -294,25 +294,25 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             JsonElement tree = getElementAdapter().read(in);
             JsonObject obj = tree.getAsJsonObject();
             UpdateDetails response = getDelegate().fromJsonTree(tree);
-            JsonObject customClientData = obj.getAsJsonObject("customClientData");
-            if (customClientData != null) {
-                for (Map.Entry<String, JsonElement> entry : customClientData.entrySet()) {
+            JsonObject properties = obj.getAsJsonObject("properties");
+            if (properties != null) {
+                for (Map.Entry<String, JsonElement> entry : properties.entrySet()) {
                     if (entry.getValue().isJsonPrimitive()) {
                         JsonPrimitive primitive = entry.getValue().getAsJsonPrimitive();
                         if (primitive.isBoolean()) {
-                            response.getCustomClientData().putBoolean(entry.getKey(), primitive.getAsBoolean());
+                            response.getProperties().putBoolean(entry.getKey(), primitive.getAsBoolean());
                         } else if (primitive.isNumber()) {
                             // This number is a LazilyParsedNumber, aka a String, we have to check wether it has a floating
                             Number num = primitive.getAsNumber();
                             try {
                                 long longVal = Long.parseLong(num.toString());
-                                response.getCustomClientData().putLong(entry.getKey(), longVal);
+                                response.getProperties().putLong(entry.getKey(), longVal);
                             } catch (NumberFormatException e) {
                                 double dVal = Double.parseDouble(num.toString());
-                                response.getCustomClientData().putDouble(entry.getKey(), dVal);
+                                response.getProperties().putDouble(entry.getKey(), dVal);
                             }
                         } else if (primitive.isString()) {
-                            response.getCustomClientData().putString(entry.getKey(), primitive.getAsString());
+                            response.getProperties().putString(entry.getKey(), primitive.getAsString());
                         }
                     }
                 }
