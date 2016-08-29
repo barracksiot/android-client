@@ -52,9 +52,9 @@ public class UpdateDetailsRequest implements Parcelable {
      */
     private final String versionId;
     /**
-     * A {@link Bundle} of user-defined properties.
+     * A {@link Bundle} of user-defined customClientData.
      */
-    private final Bundle properties;
+    private final Bundle customClientData;
 
     /**
      * Parcelable constructor
@@ -65,16 +65,16 @@ public class UpdateDetailsRequest implements Parcelable {
     protected UpdateDetailsRequest(Parcel in) {
         unitId = in.readString();
         versionId = in.readString();
-        properties = in.readBundle(getClass().getClassLoader());
+        customClientData = in.readBundle(getClass().getClassLoader());
     }
 
     /**
      * @see Builder
      */
-    private UpdateDetailsRequest(String unitId, String versionId, Bundle properties) {
+    private UpdateDetailsRequest(String unitId, String versionId, Bundle customClientData) {
         this.unitId = unitId;
         this.versionId = versionId;
-        this.properties = properties;
+        this.customClientData = customClientData;
     }
 
     /**
@@ -96,12 +96,12 @@ public class UpdateDetailsRequest implements Parcelable {
     }
 
     /**
-     * Get the {@link Bundle} of user-defined properties.
+     * Get the {@link Bundle} of user-defined customClientData.
      *
-     * @return the {@link Bundle} of user-defined properties.
+     * @return the {@link Bundle} of user-defined customClientData.
      */
-    public Bundle getProperties() {
-        return properties;
+    public Bundle getCustomClientData() {
+        return customClientData;
     }
 
     /**
@@ -119,7 +119,7 @@ public class UpdateDetailsRequest implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(unitId);
         dest.writeString(versionId);
-        dest.writeBundle(properties);
+        dest.writeBundle(customClientData);
     }
 
     /**
@@ -129,7 +129,7 @@ public class UpdateDetailsRequest implements Parcelable {
     public static final class Builder {
         private String unitId = null;
         private String versionId = null;
-        private Bundle properties = null;
+        private Bundle customClientData = null;
 
         /**
          * Builder constructor.
@@ -161,13 +161,13 @@ public class UpdateDetailsRequest implements Parcelable {
         }
 
         /**
-         * Define the {@link Bundle} of user-defined properties.
+         * Define the {@link Bundle} of user-defined customClientData.
          *
-         * @param properties the {@link Bundle} of user-defined properties.
+         * @param customClientData the {@link Bundle} of user-defined customClientData.
          * @return the same builder instance.
          */
-        public Builder properties(Bundle properties) {
-            this.properties = properties;
+        public Builder customClientData(Bundle customClientData) {
+            this.customClientData = customClientData;
             return this;
         }
 
@@ -184,7 +184,7 @@ public class UpdateDetailsRequest implements Parcelable {
             if (TextUtils.isEmpty(versionId)) {
                 throw new IllegalStateException("Version ID is required");
             }
-            return new UpdateDetailsRequest(unitId, versionId, properties);
+            return new UpdateDetailsRequest(unitId, versionId, customClientData);
         }
     }
 }

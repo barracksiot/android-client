@@ -59,17 +59,17 @@ public class UpdateDetailsRequestTest {
     @Test
     public void correctRequest() {
         UpdateDetailsRequest request;
-        Bundle properties = new Bundle();
-        properties.putString("string", "toto");
+        Bundle customClientData = new Bundle();
+        customClientData.putString("string", "toto");
         request = new UpdateDetailsRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
                 .versionId(DEFAULT_VERSION_ID)
-                .properties(properties)
+                .customClientData(customClientData)
                 .build();
 
         Assert.assertEquals(DEFAULT_UNIT_ID, request.getUnitId());
         Assert.assertEquals(DEFAULT_VERSION_ID, request.getVersionId());
-        Assert.assertTrue(Utils.compareBundles(properties, request.getProperties()));
+        Assert.assertTrue(Utils.compareBundles(customClientData, request.getCustomClientData()));
 
         request = new UpdateDetailsRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
@@ -81,12 +81,12 @@ public class UpdateDetailsRequestTest {
 
     @Test
     public void parcel() {
-        Bundle properties = new Bundle();
-        properties.putString("string", "toto");
+        Bundle customClientData = new Bundle();
+        customClientData.putString("string", "toto");
         UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
                 .versionId(DEFAULT_VERSION_ID)
-                .properties(properties)
+                .customClientData(customClientData)
                 .build();
         Parcel parcel = Parcel.obtain();
         request.writeToParcel(parcel, 0);
@@ -95,6 +95,6 @@ public class UpdateDetailsRequestTest {
         UpdateDetailsRequest createdFromParcel = UpdateDetailsRequest.CREATOR.createFromParcel(parcel);
         Assert.assertEquals(request.getUnitId(), createdFromParcel.getUnitId());
         Assert.assertEquals(request.getVersionId(), createdFromParcel.getVersionId());
-        Assert.assertTrue(Utils.compareBundles(properties, request.getProperties()));
+        Assert.assertTrue(Utils.compareBundles(customClientData, request.getCustomClientData()));
     }
 }

@@ -263,7 +263,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         }
 
         /**
-         * This method provides basic support for properties : simple key/values are parsed.
+         * This method provides basic support for customClientData : simple key/values are parsed.
          * {@inheritDoc}
          */
         @Override
@@ -286,7 +286,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         }
 
         /**
-         * This method provides basic support for properties : simple key/values are parsed.
+         * This method provides basic support for customClientData : simple key/values are parsed.
          * {@inheritDoc}
          */
         @Override
