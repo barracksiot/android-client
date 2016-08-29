@@ -50,9 +50,9 @@ public class UpdateDetails implements Parcelable {
      */
     private PackageInfo packageInfo;
     /**
-     * A set of user-defined properties.
+     * A set of user-defined customClientData.
      */
-    private Bundle properties = new Bundle();
+    private Bundle customClientData = new Bundle();
 
     private UpdateDetails() {
 
@@ -67,7 +67,7 @@ public class UpdateDetails implements Parcelable {
     protected UpdateDetails(Parcel in) {
         versionId = in.readString();
         packageInfo = in.readParcelable(getClass().getClassLoader());
-        properties = in.readBundle(getClass().getClassLoader());
+        customClientData = in.readBundle(getClass().getClassLoader());
     }
 
     /**
@@ -89,12 +89,12 @@ public class UpdateDetails implements Parcelable {
     }
 
     /**
-     * Get the set of user-defined properties.
+     * Get the set of user-defined customClientData.
      *
-     * @return the set of user-defined properties.
+     * @return the set of user-defined customClientData.
      */
-    public Bundle getProperties() {
-        return properties;
+    public Bundle getCustomClientData() {
+        return customClientData;
     }
 
     /**
@@ -112,7 +112,7 @@ public class UpdateDetails implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(versionId);
         dest.writeParcelable(packageInfo, 0);
-        dest.writeBundle(properties);
+        dest.writeBundle(customClientData);
     }
 
 }
