@@ -23,7 +23,7 @@ public class Defaults {
     /**
      * Defines the base URL for the Barracks platform
      */
-    public static final String DEFAULT_BASE_URL = "https://barracks.io";
+    public static final String DEFAULT_BASE_URL = "https://app.barracks.io/";
     /**
      * Default temporary destination for the package download
      */
