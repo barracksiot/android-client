@@ -32,6 +32,6 @@ public interface UpdateCheckApi {
      * @param request The {@link UpdateDetailsRequest request} parameters for the Barracks platform.
      * @return A {@link Call} to execute in order to retrieve the {@link UpdateDetails}
      */
-    @POST("/device/update/check")
+    @POST("/api/device/update/check")
     Call<UpdateDetails> checkUpdate(@Header("Authorization") String key, @Body UpdateDetailsRequest request);
 }
