@@ -77,7 +77,7 @@ public class UpdateCheckServiceParserTest {
     }
 
     private void assertProperties(UpdateDetails response) {
-        Bundle b = response.getProperties();
+        Bundle b = response.getCustomUpdateData();
         Assert.assertTrue(b.getBoolean("boolean"));
         Assert.assertEquals(3.14159265d, b.getDouble("double"), 0.0d);
         Assert.assertEquals(123, b.getLong("integer"));
@@ -101,12 +101,12 @@ public class UpdateCheckServiceParserTest {
         public void write(JsonWriter out, UpdateDetails response) throws IOException {
             JsonElement tree = getDelegate().toJsonTree(response);
             JsonObject obj = tree.getAsJsonObject();
-            JsonObject properties = new JsonObject();
-            properties.addProperty("string", response.getProperties().getString("string"));
-            properties.addProperty("integer", response.getProperties().getLong("integer"));
-            properties.addProperty("boolean", response.getProperties().getBoolean("boolean"));
-            properties.addProperty("double", response.getProperties().getBoolean("double"));
-            obj.add("properties", properties);
+            JsonObject customUpdateData = new JsonObject();
+            customUpdateData.addProperty("string", response.getCustomUpdateData().getString("string"));
+            customUpdateData.addProperty("integer", response.getCustomUpdateData().getLong("integer"));
+            customUpdateData.addProperty("boolean", response.getCustomUpdateData().getBoolean("boolean"));
+            customUpdateData.addProperty("double", response.getCustomUpdateData().getBoolean("double"));
+            obj.add("customUpdateData", customUpdateData);
             getElementAdapter().write(out, tree);
         }
 
@@ -114,10 +114,10 @@ public class UpdateCheckServiceParserTest {
         public UpdateDetails read(JsonReader in) throws IOException {
             JsonElement tree = getElementAdapter().read(in);
             UpdateDetails response = getDelegate().fromJsonTree(tree);
-            response.getProperties().putString("string", "toto");
-            response.getProperties().putLong("integer", 123);
-            response.getProperties().putBoolean("boolean", true);
-            response.getProperties().putDouble("double", 3.14159265d);
+            response.getCustomUpdateData().putString("string", "toto");
+            response.getCustomUpdateData().putLong("integer", 123);
+            response.getCustomUpdateData().putBoolean("boolean", true);
+            response.getCustomUpdateData().putDouble("double", 3.14159265d);
             return response;
         }
     }
