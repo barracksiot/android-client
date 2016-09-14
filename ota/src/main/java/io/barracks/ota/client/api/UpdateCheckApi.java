@@ -25,6 +25,8 @@ import retrofit2.http.POST;
  * This interface describes the call to the Barracks platform which requests {@link UpdateDetails}.
  */
 public interface UpdateCheckApi {
+    String ENDPOINT = "api/device/update/check";
+
     /**
      * The call to the Barracks platform which requests {@link UpdateDetails}.
      *
@@ -32,6 +34,6 @@ public interface UpdateCheckApi {
      * @param request The {@link UpdateDetailsRequest request} parameters for the Barracks platform.
      * @return A {@link Call} to execute in order to retrieve the {@link UpdateDetails}
      */
-    @POST("/api/device/update/check")
+    @POST(ENDPOINT)
     Call<UpdateDetails> checkUpdate(@Header("Authorization") String key, @Body UpdateDetailsRequest request);
 }
