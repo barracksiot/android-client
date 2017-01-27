@@ -257,17 +257,19 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
 
         private JsonObject bundleToJsonObject(Bundle bundle) {
             JsonObject jsonObject = new JsonObject();
-            Set<String> keys = bundle.keySet();
-            for (String key : keys) {
-                Object value = bundle.get(key);
-                if (Boolean.class.isInstance(value)) {
-                    jsonObject.addProperty(key, (Boolean) value);
-                } else if (String.class.isInstance(value)) {
-                    jsonObject.addProperty(key, (String) value);
-                } else if (Number.class.isInstance(value)) {
-                    jsonObject.addProperty(key, (Number) value);
-                } else if (Bundle.class.isInstance(value)) {
-                    jsonObject.add(key, bundleToJsonObject((Bundle) value));
+            if(bundle != null) {
+                Set<String> keys = bundle.keySet();
+                for (String key : keys) {
+                    Object value = bundle.get(key);
+                    if (Boolean.class.isInstance(value)) {
+                        jsonObject.addProperty(key, (Boolean) value);
+                    } else if (String.class.isInstance(value)) {
+                        jsonObject.addProperty(key, (String) value);
+                    } else if (Number.class.isInstance(value)) {
+                        jsonObject.addProperty(key, (Number) value);
+                    } else if (Bundle.class.isInstance(value)) {
+                        jsonObject.add(key, bundleToJsonObject((Bundle) value));
+                    }
                 }
             }
             return jsonObject;
@@ -280,7 +282,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
         @Override
         public Bundle read(JsonReader in) throws IOException {
             JsonElement tree = getElementAdapter().read(in);
-            JsonObject obj = tree.getAsJsonObject();
+            JsonObject obj = tree.isJsonObject() ? tree.getAsJsonObject(): null;
             Bundle bundle = new Bundle();
             if (obj != null) {
                 jsonObjectToBundle(bundle, obj);
