@@ -58,7 +58,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        BarracksHelper helper = new BarracksHelper("deadbeef", "https://app.barracks.io/");
+        BarracksHelper helper = new BarracksHelper("aa89ca0d239a2f54bce88cfa7defe3e9363a6ff181d0395eacbf9e4197420356", "https://app.barracks.io/");
 
         updateCheckHelper = helper.getUpdateCheckHelper();
         updateCheckHelper.bind(this, new UpdateCheckCallback() {

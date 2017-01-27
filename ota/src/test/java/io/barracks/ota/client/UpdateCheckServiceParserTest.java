@@ -77,7 +77,7 @@ public class UpdateCheckServiceParserTest {
         Assert.assertEquals(123, b.getLong("integer"));
         Assert.assertTrue("toto".equals(b.getString("string")));
         Bundle nestedBundle = b.getBundle("object");
-        Assert.assertTrue(nestedBundle.getBoolean("boolean") == false);
+        Assert.assertFalse(nestedBundle.getBoolean("boolean"));
         Assert.assertEquals(6.28318530, nestedBundle.getDouble("double"), 0.0d);
         Assert.assertEquals(321, nestedBundle.getLong("integer"));
         Assert.assertTrue("tata".equals(nestedBundle.getString("string")));

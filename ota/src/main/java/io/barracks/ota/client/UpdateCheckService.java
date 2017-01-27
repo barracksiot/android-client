@@ -296,28 +296,38 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             UpdateDetails response = getDelegate().fromJsonTree(tree);
             JsonObject customUpdateData = obj.getAsJsonObject("customUpdateData");
             if (customUpdateData != null) {
-                for (Map.Entry<String, JsonElement> entry : customUpdateData.entrySet()) {
-                    if (entry.getValue().isJsonPrimitive()) {
-                        JsonPrimitive primitive = entry.getValue().getAsJsonPrimitive();
-                        if (primitive.isBoolean()) {
-                            response.getCustomUpdateData().putBoolean(entry.getKey(), primitive.getAsBoolean());
-                        } else if (primitive.isNumber()) {
-                            // This number is a LazilyParsedNumber, aka a String, we have to check wether it has a floating
-                            Number num = primitive.getAsNumber();
-                            try {
-                                long longVal = Long.parseLong(num.toString());
-                                response.getCustomUpdateData().putLong(entry.getKey(), longVal);
-                            } catch (NumberFormatException e) {
-                                double dVal = Double.parseDouble(num.toString());
-                                response.getCustomUpdateData().putDouble(entry.getKey(), dVal);
-                            }
-                        } else if (primitive.isString()) {
-                            response.getCustomUpdateData().putString(entry.getKey(), primitive.getAsString());
-                        }
-                    }
-                }
+                jsonObjectToBundle(response.getCustomUpdateData(), customUpdateData);
             }
             return response;
+        }
+
+        private void jsonObjectToBundle(Bundle bundle, JsonObject jsonObject) {
+            for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+                if (entry.getValue().isJsonPrimitive()) {
+                    JsonPrimitive primitive = entry.getValue().getAsJsonPrimitive();
+                    if (primitive.isBoolean()) {
+                        bundle.putBoolean(entry.getKey(), primitive.getAsBoolean());
+                    } else if (primitive.isNumber()) {
+                        // This number is a LazilyParsedNumber, aka a String, we have to check whether it has a floating
+                        Number num = primitive.getAsNumber();
+                        try {
+                            long longVal = Long.parseLong(num.toString());
+                            bundle.putLong(entry.getKey(), longVal);
+                        } catch (NumberFormatException e) {
+                            double dVal = Double.parseDouble(num.toString());
+                            bundle.putDouble(entry.getKey(), dVal);
+                        }
+                    } else if (primitive.isString()) {
+                        bundle.putString(entry.getKey(), primitive.getAsString());
+                    }
+                }
+                else {
+                    Bundle entryBundle = new Bundle();
+                    bundle.putBundle(entry.getKey(), entryBundle);
+                    jsonObjectToBundle(entryBundle, (JsonObject) entry.getValue());
+                }
+
+            }
         }
 
         public TypeAdapter<UpdateDetails> getDelegate() {
