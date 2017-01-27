@@ -55,12 +55,6 @@ public class UpdateCheckServiceParserTest {
         checkJsonResponse(service);
     }
 
-    @Test
-    public void customParser() throws IOException {
-        UpdateCheckService service = new CustomUpdateCheckService();
-        checkJsonResponse(service);
-    }
-
     private void checkJsonResponse(UpdateCheckService service) throws IOException {
         GsonBuilder builder = service.setUpGsonBuilder(new GsonBuilder());
         Gson gson = Utils.getRobolectricGson(builder);
@@ -81,55 +75,5 @@ public class UpdateCheckServiceParserTest {
         Assert.assertEquals(6.28318530, nestedBundle.getDouble("double"), 0.0d);
         Assert.assertEquals(321, nestedBundle.getLong("integer"));
         Assert.assertTrue("tata".equals(nestedBundle.getString("string")));
-    }
-
-    private static final class CustomUpdateCheckService extends UpdateCheckService {
-        @Override
-        protected TypeAdapter<UpdateDetails> getResponsePropertiesAdapter(Gson gson, TypeToken<UpdateDetails> type) {
-            return new CustomPropertiesAdapter(this, gson, type);
-        }
-    }
-
-    private static final class CustomPropertiesAdapter extends UpdateCheckService.DefaultResponseAdapter {
-
-        public CustomPropertiesAdapter(TypeAdapterFactory factory, Gson gson, TypeToken<UpdateDetails> type) {
-            super(factory, gson, type);
-        }
-
-        @Override
-        public void write(JsonWriter out, UpdateDetails response) throws IOException {
-            JsonElement tree = getDelegate().toJsonTree(response);
-            JsonObject obj = tree.getAsJsonObject();
-            JsonObject customUpdateData = new JsonObject();
-            customUpdateData.addProperty("string", response.getCustomUpdateData().getString("string"));
-            customUpdateData.addProperty("integer", response.getCustomUpdateData().getLong("integer"));
-            customUpdateData.addProperty("boolean", response.getCustomUpdateData().getBoolean("boolean"));
-            customUpdateData.addProperty("double", response.getCustomUpdateData().getBoolean("double"));
-            JsonObject object = new JsonObject();
-            object.addProperty("string", response.getCustomUpdateData().getBundle("object").getString("string"));
-            object.addProperty("integer", response.getCustomUpdateData().getBundle("object").getLong("integer"));
-            object.addProperty("boolean", response.getCustomUpdateData().getBundle("object").getBoolean("boolean"));
-            object.addProperty("double", response.getCustomUpdateData().getBundle("object").getBoolean("double"));
-            customUpdateData.add("object", object);
-            obj.add("customUpdateData", customUpdateData);
-            getElementAdapter().write(out, tree);
-        }
-
-        @Override
-        public UpdateDetails read(JsonReader in) throws IOException {
-            JsonElement tree = getElementAdapter().read(in);
-            UpdateDetails response = getDelegate().fromJsonTree(tree);
-            response.getCustomUpdateData().putString("string", "toto");
-            response.getCustomUpdateData().putLong("integer", 123);
-            response.getCustomUpdateData().putBoolean("boolean", true);
-            response.getCustomUpdateData().putDouble("double", 3.14159265d);
-            Bundle b = new Bundle();
-            b.putString("string", "tata");
-            b.putLong("integer", 321);
-            b.putBoolean("boolean", false);
-            b.putDouble("double", 6.28318530d);
-            response.getCustomUpdateData().putBundle("object", b);
-            return response;
-        }
     }
 }
