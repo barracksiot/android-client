@@ -58,7 +58,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        BarracksHelper helper = new BarracksHelper("deadbeef", "https://app.barracks.io/");
+        BarracksHelper helper = new BarracksHelper("API_KEY", "https://app.barracks.io/");
 
         updateCheckHelper = helper.getUpdateCheckHelper();
         updateCheckHelper.bind(this, new UpdateCheckCallback() {
@@ -108,10 +108,17 @@ public class CheckUpdateActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         try {
+                            Bundle customClientData = new Bundle();
+                            Bundle dataMetric = new Bundle();
+                            dataMetric.putCharSequence("status", "off");
+                            dataMetric.putFloat("temperature", 20.54f);
+                            customClientData.putBundle("dataMetric", dataMetric);
+                            customClientData.putCharSequence("userStatus", "registered");
                             updateCheckHelper.requestUpdate(
                                     new UpdateDetailsRequest.Builder()
                                             .versionId(version.getText().toString())
                                             .unitId("moneypenny")
+                                            .customClientData(customClientData)
                                             .build()
                             );
                         } catch (Exception e) {

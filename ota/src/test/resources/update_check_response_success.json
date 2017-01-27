@@ -9,6 +9,12 @@
     "string": "toto",
     "integer": 123,
     "boolean": true,
-    "double": 3.14159265
+    "double": 3.14159265,
+    "object": {
+      "string": "tata",
+      "integer": 321,
+      "boolean": false,
+      "double": 6.28318530
+    }
   }
 }

@@ -201,33 +201,21 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
      * @param builder The service's basic {@link GsonBuilder} which will be updated in this method.
      * @return The updated {@link GsonBuilder}
      */
-    protected GsonBuilder setUpGsonBuilder(GsonBuilder builder) {
-        builder.setExclusionStrategies(new ExclusionStrategy() {
-            @Override
-            public boolean shouldSkipField(FieldAttributes f) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldSkipClass(Class<?> clazz) {
-                return clazz == Bundle.class;
-            }
-        });
+    GsonBuilder setUpGsonBuilder(GsonBuilder builder) {
         return builder.registerTypeAdapterFactory(this);
     }
 
     /**
-     * This method provides a {@link TypeAdapter} for the {@link UpdateDetails}.
+     * This method provides a {@link TypeAdapter} for the {@link Bundle}.
      * Override this method to provide a custom implementation, in order to fill the
-     * {@link UpdateDetails#customUpdateData customUpdateData bundle} with specific values.
+     * {@link Bundle bundle} with specific values.
      *
      * @param gson The {@link Gson} parser instance.
-     * @param type The {@link TypeToken} for the {@link UpdateDetails}
-     * @return The {@link TypeAdapter} for the {@link UpdateDetails}
-     * @see DefaultResponseAdapter The default implementation.
+     * @return The {@link TypeAdapter} for the {@link Bundle}
+     * @see DefaultBundleAdapter The default implementation.
      */
-    protected TypeAdapter<UpdateDetails> getResponsePropertiesAdapter(Gson gson, TypeToken<UpdateDetails> type) {
-        return new DefaultResponseAdapter(this, gson, type);
+    private TypeAdapter<Bundle> getBundleAdapter(Gson gson) {
+        return new DefaultBundleAdapter(gson);
     }
 
     /**
@@ -235,97 +223,105 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
      */
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-        if (type.getRawType() == UpdateDetails.class) {
-            return (TypeAdapter<T>) getResponsePropertiesAdapter(gson, TypeToken.get(UpdateDetails.class));
+        if (type.getRawType() == Bundle.class) {
+            return (TypeAdapter<T>) getBundleAdapter(gson);
         }
         return null;
     }
 
     /**
-     * The default {@link TypeAdapter} for the {@link UpdateDetails}.
+     * The default {@link TypeAdapter} for the {@link Bundle}.
      *
      * @see TypeAdapterFactory#create(Gson, TypeToken)
-     * @see UpdateCheckService#getResponsePropertiesAdapter(Gson, TypeToken)
+     * @see UpdateCheckService#getBundleAdapter(Gson)
      */
-    public static class DefaultResponseAdapter extends TypeAdapter<UpdateDetails> {
-        /**
-         * The delegate adapter is allowing us to parse the {@link UpdateDetails} basic fields.
-         */
-        private final TypeAdapter<UpdateDetails> delegate;
+    public static class DefaultBundleAdapter extends TypeAdapter<Bundle> {
         /**
          *
          */
         private final TypeAdapter<JsonElement> elementAdapter;
 
-        public DefaultResponseAdapter(TypeAdapterFactory factory, Gson gson, TypeToken<UpdateDetails> type) {
-            delegate = gson.getDelegateAdapter(factory, type);
+        public DefaultBundleAdapter(Gson gson) {
             elementAdapter = gson.getAdapter(JsonElement.class);
         }
 
         /**
-         * This method provides basic support for customUpdateData : simple key/values are parsed.
+         * This method provides basic support for nested Bundles.
          * {@inheritDoc}
          */
         @Override
-        public void write(JsonWriter out, UpdateDetails response) throws IOException {
-            JsonElement tree = getDelegate().toJsonTree(response);
-            JsonObject customUpdateData = new JsonObject();
-            Set<String> keys = response.getCustomUpdateData().keySet();
-            for (String key : keys) {
-                Object value = response.getCustomUpdateData().get(key);
-                if (Boolean.class.isInstance(value)) {
-                    customUpdateData.addProperty(key, (Boolean) value);
-                } else if (String.class.isInstance(value)) {
-                    customUpdateData.addProperty(key, (String) value);
-                } else if (Number.class.isInstance(value)) {
-                    customUpdateData.addProperty(key, (Number) value);
-                }
-            }
-            tree.getAsJsonObject().add("customUpdateData", customUpdateData);
-            getElementAdapter().write(out, tree);
+        public void write(JsonWriter out, Bundle bundle) throws IOException {
+            JsonObject jsonObject = bundleToJsonObject(bundle);
+            getElementAdapter().write(out, jsonObject);
         }
 
-        /**
-         * This method provides basic support for customUpdateData : simple key/values are parsed.
-         * {@inheritDoc}
-         */
-        @Override
-        public UpdateDetails read(JsonReader in) throws IOException {
-            JsonElement tree = getElementAdapter().read(in);
-            JsonObject obj = tree.getAsJsonObject();
-            UpdateDetails response = getDelegate().fromJsonTree(tree);
-            JsonObject customUpdateData = obj.getAsJsonObject("customUpdateData");
-            if (customUpdateData != null) {
-                for (Map.Entry<String, JsonElement> entry : customUpdateData.entrySet()) {
-                    if (entry.getValue().isJsonPrimitive()) {
-                        JsonPrimitive primitive = entry.getValue().getAsJsonPrimitive();
-                        if (primitive.isBoolean()) {
-                            response.getCustomUpdateData().putBoolean(entry.getKey(), primitive.getAsBoolean());
-                        } else if (primitive.isNumber()) {
-                            // This number is a LazilyParsedNumber, aka a String, we have to check wether it has a floating
-                            Number num = primitive.getAsNumber();
-                            try {
-                                long longVal = Long.parseLong(num.toString());
-                                response.getCustomUpdateData().putLong(entry.getKey(), longVal);
-                            } catch (NumberFormatException e) {
-                                double dVal = Double.parseDouble(num.toString());
-                                response.getCustomUpdateData().putDouble(entry.getKey(), dVal);
-                            }
-                        } else if (primitive.isString()) {
-                            response.getCustomUpdateData().putString(entry.getKey(), primitive.getAsString());
-                        }
+        private JsonObject bundleToJsonObject(Bundle bundle) {
+            JsonObject jsonObject = new JsonObject();
+            if(bundle != null) {
+                Set<String> keys = bundle.keySet();
+                for (String key : keys) {
+                    Object value = bundle.get(key);
+                    if (Boolean.class.isInstance(value)) {
+                        jsonObject.addProperty(key, (Boolean) value);
+                    } else if (String.class.isInstance(value)) {
+                        jsonObject.addProperty(key, (String) value);
+                    } else if (Number.class.isInstance(value)) {
+                        jsonObject.addProperty(key, (Number) value);
+                    } else if (Bundle.class.isInstance(value)) {
+                        jsonObject.add(key, bundleToJsonObject((Bundle) value));
                     }
                 }
             }
-            return response;
+            return jsonObject;
         }
 
-        public TypeAdapter<UpdateDetails> getDelegate() {
-            return delegate;
+        /**
+         * This method provides basic support for nested bundles.
+         * {@inheritDoc}
+         */
+        @Override
+        public Bundle read(JsonReader in) throws IOException {
+            JsonElement tree = getElementAdapter().read(in);
+            JsonObject obj = tree.isJsonObject() ? tree.getAsJsonObject(): null;
+            Bundle bundle = new Bundle();
+            if (obj != null) {
+                jsonObjectToBundle(bundle, obj);
+            }
+            return bundle;
+        }
+
+        private void jsonObjectToBundle(Bundle bundle, JsonObject jsonObject) {
+            for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
+                if (entry.getValue().isJsonPrimitive()) {
+                    JsonPrimitive primitive = entry.getValue().getAsJsonPrimitive();
+                    if (primitive.isBoolean()) {
+                        bundle.putBoolean(entry.getKey(), primitive.getAsBoolean());
+                    } else if (primitive.isNumber()) {
+                        // This number is a LazilyParsedNumber, aka a String, we have to check whether it has a floating
+                        Number num = primitive.getAsNumber();
+                        try {
+                            long longVal = Long.parseLong(num.toString());
+                            bundle.putLong(entry.getKey(), longVal);
+                        } catch (NumberFormatException e) {
+                            double dVal = Double.parseDouble(num.toString());
+                            bundle.putDouble(entry.getKey(), dVal);
+                        }
+                    } else if (primitive.isString()) {
+                        bundle.putString(entry.getKey(), primitive.getAsString());
+                    }
+                }
+                else {
+                    Bundle entryBundle = new Bundle();
+                    bundle.putBundle(entry.getKey(), entryBundle);
+                    jsonObjectToBundle(entryBundle, (JsonObject) entry.getValue());
+                }
+
+            }
         }
 
         public TypeAdapter<JsonElement> getElementAdapter() {
             return elementAdapter;
         }
     }
+
 }
