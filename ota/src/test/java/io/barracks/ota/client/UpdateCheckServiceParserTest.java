@@ -16,37 +16,30 @@
 
 package io.barracks.ota.client;
 
-import android.os.Bundle;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import io.barracks.client.ota.BuildConfig;
 import io.barracks.ota.client.api.UpdateDetails;
 import io.barracks.ota.client.api.UpdateDetailsTest;
 
-/**
- * Created by saiimons on 16-04-07.
- */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 23)
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 25)
 public class UpdateCheckServiceParserTest {
 
     @Test
@@ -56,24 +49,29 @@ public class UpdateCheckServiceParserTest {
     }
 
     private void checkJsonResponse(UpdateCheckService service) throws IOException {
-        GsonBuilder builder = service.setUpGsonBuilder(new GsonBuilder());
-        Gson gson = Utils.getRobolectricGson(builder);
-        File f = new File(ClassLoader.getSystemResource("update_check_response_success.json").getPath());
+        final GsonBuilder builder = service.setUpGsonBuilder(new GsonBuilder());
+        final Gson gson = Utils.getRobolectricGson(builder);
+        final File f = new File(ClassLoader.getSystemResource("update_check_response_success.json").getPath());
         UpdateDetails response = gson.fromJson(new FileReader(f), UpdateDetails.class);
         UpdateDetailsTest.assertValues(response);
         assertCustomUpdateData(response);
     }
 
     private void assertCustomUpdateData(UpdateDetails response) {
-        Bundle b = response.getCustomUpdateData();
-        Assert.assertTrue(b.getBoolean("boolean"));
-        Assert.assertEquals(3.14159265d, b.getDouble("double"), 0.0d);
-        Assert.assertEquals(123, b.getLong("integer"));
-        Assert.assertTrue("toto".equals(b.getString("string")));
-        Bundle nestedBundle = b.getBundle("object");
-        Assert.assertFalse(nestedBundle.getBoolean("boolean"));
-        Assert.assertEquals(6.28318530, nestedBundle.getDouble("double"), 0.0d);
-        Assert.assertEquals(321, nestedBundle.getLong("integer"));
-        Assert.assertTrue("tata".equals(nestedBundle.getString("string")));
+        Map customUpdateData = response.getCustomUpdateData();
+        assertTrue((Boolean) customUpdateData.get("boolean"));
+        assertEquals(3.14159265d, (Double) customUpdateData.get("double"), 0.0d);
+        assertEquals(123.0, (Double) customUpdateData.get("integer"), 0.0d);
+        assertTrue("toto".equals(customUpdateData.get("string")));
+        Map nestedObject = (Map) customUpdateData.get("object");
+        assertFalse((Boolean) nestedObject.get("boolean"));
+        assertEquals(6.28318530, (Double) nestedObject.get("double"), 0.0d);
+        assertEquals(321.0d, (Double) nestedObject.get("integer"), 0.0d);
+        assertTrue("tata".equals(nestedObject.get("string")));
+        List nestedArray = (List) customUpdateData.get("array");
+        assertEquals(nestedArray.get(0), false);
+        assertEquals(nestedArray.get(1), 1.0);
+        assertEquals(nestedArray.get(2), "two");
+        assertEquals(nestedArray.get(3), 3.14159265);
     }
 }

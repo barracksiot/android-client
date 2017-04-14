@@ -23,10 +23,9 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -37,6 +36,8 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -206,122 +207,10 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     }
 
     /**
-     * This method provides a {@link TypeAdapter} for the {@link Bundle}.
-     * Override this method to provide a custom implementation, in order to fill the
-     * {@link Bundle bundle} with specific values.
-     *
-     * @param gson The {@link Gson} parser instance.
-     * @return The {@link TypeAdapter} for the {@link Bundle}
-     * @see DefaultBundleAdapter The default implementation.
-     */
-    private TypeAdapter<Bundle> getBundleAdapter(Gson gson) {
-        return new DefaultBundleAdapter(gson);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-        if (type.getRawType() == Bundle.class) {
-            return (TypeAdapter<T>) getBundleAdapter(gson);
-        }
         return null;
     }
-
-    /**
-     * The default {@link TypeAdapter} for the {@link Bundle}.
-     *
-     * @see TypeAdapterFactory#create(Gson, TypeToken)
-     * @see UpdateCheckService#getBundleAdapter(Gson)
-     */
-    public static class DefaultBundleAdapter extends TypeAdapter<Bundle> {
-        /**
-         *
-         */
-        private final TypeAdapter<JsonElement> elementAdapter;
-
-        public DefaultBundleAdapter(Gson gson) {
-            elementAdapter = gson.getAdapter(JsonElement.class);
-        }
-
-        /**
-         * This method provides basic support for nested Bundles.
-         * {@inheritDoc}
-         */
-        @Override
-        public void write(JsonWriter out, Bundle bundle) throws IOException {
-            JsonObject jsonObject = bundleToJsonObject(bundle);
-            getElementAdapter().write(out, jsonObject);
-        }
-
-        private JsonObject bundleToJsonObject(Bundle bundle) {
-            JsonObject jsonObject = new JsonObject();
-            if(bundle != null) {
-                Set<String> keys = bundle.keySet();
-                for (String key : keys) {
-                    Object value = bundle.get(key);
-                    if (Boolean.class.isInstance(value)) {
-                        jsonObject.addProperty(key, (Boolean) value);
-                    } else if (String.class.isInstance(value)) {
-                        jsonObject.addProperty(key, (String) value);
-                    } else if (Number.class.isInstance(value)) {
-                        jsonObject.addProperty(key, (Number) value);
-                    } else if (Bundle.class.isInstance(value)) {
-                        jsonObject.add(key, bundleToJsonObject((Bundle) value));
-                    }
-                }
-            }
-            return jsonObject;
-        }
-
-        /**
-         * This method provides basic support for nested bundles.
-         * {@inheritDoc}
-         */
-        @Override
-        public Bundle read(JsonReader in) throws IOException {
-            JsonElement tree = getElementAdapter().read(in);
-            JsonObject obj = tree.isJsonObject() ? tree.getAsJsonObject(): null;
-            Bundle bundle = new Bundle();
-            if (obj != null) {
-                jsonObjectToBundle(bundle, obj);
-            }
-            return bundle;
-        }
-
-        private void jsonObjectToBundle(Bundle bundle, JsonObject jsonObject) {
-            for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-                if (entry.getValue().isJsonPrimitive()) {
-                    JsonPrimitive primitive = entry.getValue().getAsJsonPrimitive();
-                    if (primitive.isBoolean()) {
-                        bundle.putBoolean(entry.getKey(), primitive.getAsBoolean());
-                    } else if (primitive.isNumber()) {
-                        // This number is a LazilyParsedNumber, aka a String, we have to check whether it has a floating
-                        Number num = primitive.getAsNumber();
-                        try {
-                            long longVal = Long.parseLong(num.toString());
-                            bundle.putLong(entry.getKey(), longVal);
-                        } catch (NumberFormatException e) {
-                            double dVal = Double.parseDouble(num.toString());
-                            bundle.putDouble(entry.getKey(), dVal);
-                        }
-                    } else if (primitive.isString()) {
-                        bundle.putString(entry.getKey(), primitive.getAsString());
-                    }
-                }
-                else {
-                    Bundle entryBundle = new Bundle();
-                    bundle.putBundle(entry.getKey(), entryBundle);
-                    jsonObjectToBundle(entryBundle, (JsonObject) entry.getValue());
-                }
-
-            }
-        }
-
-        public TypeAdapter<JsonElement> getElementAdapter() {
-            return elementAdapter;
-        }
-    }
-
 }

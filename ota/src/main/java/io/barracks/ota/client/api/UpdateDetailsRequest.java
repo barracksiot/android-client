@@ -21,6 +21,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * This class encapsulates parameters to request {@link UpdateDetails} to the Barracks service.<br>
  * It comes with a convenient {@link Builder Builder} which creates and verifies the validity of the request<br>
@@ -54,7 +57,7 @@ public class UpdateDetailsRequest implements Parcelable {
     /**
      * A {@link Bundle} of user-defined customClientData.
      */
-    private final Bundle customClientData;
+    private final Map customClientData;
 
     /**
      * Parcelable constructor
@@ -65,13 +68,13 @@ public class UpdateDetailsRequest implements Parcelable {
     protected UpdateDetailsRequest(Parcel in) {
         unitId = in.readString();
         versionId = in.readString();
-        customClientData = in.readBundle(getClass().getClassLoader());
+        customClientData = in.readHashMap(getClass().getClassLoader());
     }
 
     /**
      * @see Builder
      */
-    private UpdateDetailsRequest(String unitId, String versionId, Bundle customClientData) {
+    private UpdateDetailsRequest(String unitId, String versionId, Map customClientData) {
         this.unitId = unitId;
         this.versionId = versionId;
         this.customClientData = customClientData;
@@ -100,7 +103,7 @@ public class UpdateDetailsRequest implements Parcelable {
      *
      * @return the {@link Bundle} of user-defined customClientData.
      */
-    public Bundle getCustomClientData() {
+    public Map getCustomClientData() {
         return customClientData;
     }
 
@@ -119,7 +122,7 @@ public class UpdateDetailsRequest implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(unitId);
         dest.writeString(versionId);
-        dest.writeBundle(customClientData);
+        dest.writeMap(customClientData);
     }
 
     /**
@@ -129,7 +132,7 @@ public class UpdateDetailsRequest implements Parcelable {
     public static final class Builder {
         private String unitId = null;
         private String versionId = null;
-        private Bundle customClientData = null;
+        private Map customClientData = null;
 
         /**
          * Builder constructor.
@@ -166,7 +169,7 @@ public class UpdateDetailsRequest implements Parcelable {
          * @param customClientData the {@link Bundle} of user-defined customClientData.
          * @return the same builder instance.
          */
-        public Builder customClientData(Bundle customClientData) {
+        public Builder customClientData(Map customClientData) {
             this.customClientData = customClientData;
             return this;
         }

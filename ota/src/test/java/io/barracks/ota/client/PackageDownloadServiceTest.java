@@ -27,10 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.ServiceController;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,17 +49,14 @@ import okio.Buffer;
 
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by saiimons on 16-04-21.
- */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 23)
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 25)
 public class PackageDownloadServiceTest {
-    LocalBroadcastManager manager;
-    ServiceController<PackageDownloadService> controller;
-    PackageDownloadService service;
-    MockWebServer server;
-    UpdateDetails successResponse, failureResponse, ioErrorResponse, signatureFailResponse;
+    private LocalBroadcastManager manager;
+    private ServiceController<PackageDownloadService> controller;
+    private PackageDownloadService service;
+    private MockWebServer server;
+    private UpdateDetails successResponse, failureResponse, ioErrorResponse, signatureFailResponse;
 
     @Before
     public void prepare() throws IOException, NoSuchFieldException, IllegalAccessException {

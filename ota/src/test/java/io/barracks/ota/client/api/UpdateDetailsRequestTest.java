@@ -16,23 +16,22 @@
 
 package io.barracks.ota.client.api;
 
-import android.os.Bundle;
 import android.os.Parcel;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
-import io.barracks.client.ota.BuildConfig;
-import io.barracks.ota.client.Utils;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Created by saiimons on 16-04-06.
- */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 23)
+import io.barracks.client.ota.BuildConfig;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 25)
 public class UpdateDetailsRequestTest {
     private static final String DEFAULT_UNIT_ID = "deadbeef";
     private static final String DEFAULT_VERSION_ID = "42";
@@ -58,43 +57,44 @@ public class UpdateDetailsRequestTest {
 
     @Test
     public void correctRequest() {
-        UpdateDetailsRequest request;
-        Bundle customClientData = new Bundle();
-        customClientData.putString("string", "toto");
-        request = new UpdateDetailsRequest.Builder()
+        final Map<String, Object> customClientData = new HashMap<>();
+        customClientData.put("string", "toto");
+        customClientData.put("array", Arrays.asList(false, 1.0, "two", 3.14159265));
+        final UpdateDetailsRequest requestWithClientData = new UpdateDetailsRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
                 .versionId(DEFAULT_VERSION_ID)
                 .customClientData(customClientData)
                 .build();
 
-        Assert.assertEquals(DEFAULT_UNIT_ID, request.getUnitId());
-        Assert.assertEquals(DEFAULT_VERSION_ID, request.getVersionId());
-        Assert.assertTrue(Utils.compareBundles(customClientData, request.getCustomClientData()));
+        Assert.assertEquals(DEFAULT_UNIT_ID, requestWithClientData.getUnitId());
+        Assert.assertEquals(DEFAULT_VERSION_ID, requestWithClientData.getVersionId());
+        Assert.assertEquals(customClientData, requestWithClientData.getCustomClientData());
 
-        request = new UpdateDetailsRequest.Builder()
+        final UpdateDetailsRequest requestWithoutClientData = new UpdateDetailsRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
                 .versionId(DEFAULT_VERSION_ID)
                 .build();
-        Assert.assertEquals(DEFAULT_UNIT_ID, request.getUnitId());
-        Assert.assertEquals(DEFAULT_VERSION_ID, request.getVersionId());
+        Assert.assertEquals(DEFAULT_UNIT_ID, requestWithoutClientData.getUnitId());
+        Assert.assertEquals(DEFAULT_VERSION_ID, requestWithoutClientData.getVersionId());
     }
 
     @Test
     public void parcel() {
-        Bundle customClientData = new Bundle();
-        customClientData.putString("string", "toto");
-        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
+        final Map<String, Object> customClientData = new HashMap<>();
+        customClientData.put("string", "toto");
+        customClientData.put("array", Arrays.asList(false, 1.0, "two", 3.14159265));
+        final UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
                 .versionId(DEFAULT_VERSION_ID)
                 .customClientData(customClientData)
                 .build();
-        Parcel parcel = Parcel.obtain();
+        final Parcel parcel = Parcel.obtain();
         request.writeToParcel(parcel, 0);
 
         parcel.setDataPosition(0);
-        UpdateDetailsRequest createdFromParcel = UpdateDetailsRequest.CREATOR.createFromParcel(parcel);
+        final UpdateDetailsRequest createdFromParcel = UpdateDetailsRequest.CREATOR.createFromParcel(parcel);
         Assert.assertEquals(request.getUnitId(), createdFromParcel.getUnitId());
         Assert.assertEquals(request.getVersionId(), createdFromParcel.getVersionId());
-        Assert.assertTrue(Utils.compareBundles(customClientData, request.getCustomClientData()));
+        Assert.assertEquals(request.getCustomClientData(), createdFromParcel.getCustomClientData());
     }
 }

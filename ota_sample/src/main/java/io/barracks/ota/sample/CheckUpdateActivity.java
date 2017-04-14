@@ -25,6 +25,9 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import io.barracks.ota.client.api.UpdateDetails;
 import io.barracks.ota.client.api.UpdateDetailsRequest;
 import io.barracks.ota.client.helper.BarracksHelper;
@@ -108,12 +111,12 @@ public class CheckUpdateActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         try {
-                            Bundle customClientData = new Bundle();
-                            Bundle dataMetric = new Bundle();
-                            dataMetric.putCharSequence("status", "off");
-                            dataMetric.putFloat("temperature", 20.54f);
-                            customClientData.putBundle("dataMetric", dataMetric);
-                            customClientData.putCharSequence("userStatus", "registered");
+                            Map<String, Object> customClientData = new HashMap<>();
+                            Map<String, Object> dataMetric = new HashMap<>();
+                            dataMetric.put("status", "off");
+                            dataMetric.put("temperature", 20.54f);
+                            customClientData.put("dataMetric", dataMetric);
+                            customClientData.put("userStatus", "registered");
                             updateCheckHelper.requestUpdate(
                                     new UpdateDetailsRequest.Builder()
                                             .versionId(version.getText().toString())

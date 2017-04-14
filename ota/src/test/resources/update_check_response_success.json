@@ -15,6 +15,12 @@
       "integer": 321,
       "boolean": false,
       "double": 6.28318530
-    }
+    },
+    "array": [
+      false,
+      1,
+      "two",
+      3.14159265
+    ]
   }
 }

@@ -20,6 +20,9 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * This class encapsulates the details about an update.<br>
  * It is a {@link Parcelable} which allows for it to be sent back and forth to the different
@@ -52,7 +55,7 @@ public class UpdateDetails implements Parcelable {
     /**
      * A set of user-defined customUpdateData.
      */
-    private Bundle customUpdateData = new Bundle();
+    private Map customUpdateData = new HashMap<>();
 
     private UpdateDetails() {
 
@@ -67,7 +70,7 @@ public class UpdateDetails implements Parcelable {
     protected UpdateDetails(Parcel in) {
         versionId = in.readString();
         packageInfo = in.readParcelable(getClass().getClassLoader());
-        customUpdateData = in.readBundle(getClass().getClassLoader());
+        customUpdateData = in.readHashMap(getClass().getClassLoader());
     }
 
     /**
@@ -93,7 +96,7 @@ public class UpdateDetails implements Parcelable {
      *
      * @return the set of user-defined customUpdateData.
      */
-    public Bundle getCustomUpdateData() {
+    public Map getCustomUpdateData() {
         return customUpdateData;
     }
 
@@ -112,7 +115,7 @@ public class UpdateDetails implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(versionId);
         dest.writeParcelable(packageInfo, 0);
-        dest.writeBundle(customUpdateData);
+        dest.writeMap(customUpdateData);
     }
 
 }

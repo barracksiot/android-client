@@ -22,7 +22,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
@@ -32,11 +32,8 @@ import io.barracks.ota.client.UpdateCheckService;
 import io.barracks.ota.client.api.UpdateDetails;
 import io.barracks.ota.client.api.UpdateDetailsRequest;
 
-/**
- * Created by saiimons on 16-04-07.
- */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 23)
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 25)
 public class UpdateCheckHelperTest {
     @Test
     public void calls() {
