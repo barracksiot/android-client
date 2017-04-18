@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import io.barracks.client.ota.BuildConfig;
@@ -21,11 +21,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by saiimons on 14/09/2016.
- */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 23)
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 25)
 public class UpdateCheckApiTest {
 
     @Before
@@ -44,7 +41,10 @@ public class UpdateCheckApiTest {
                 .addConverterFactory(GsonConverterFactory.create(Utils.getRobolectricGson(new GsonBuilder())))
                 .build();
         final UpdateCheckApi updateCheckApi = retrofit.create(UpdateCheckApi.class);
-        final Call<UpdateDetails> call = updateCheckApi.checkUpdate("deadbeef", new UpdateDetailsRequest.Builder().unitId("aaa").versionId("bbb").build());
+        final Call<UpdateDetails> call = updateCheckApi.checkUpdate(
+                "deadbeef",
+                new UpdateDetailsRequest.Builder().unitId("aaa").versionId("bbb").build()
+        );
 
         // When
         Response<UpdateDetails> response = call.execute();

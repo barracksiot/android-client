@@ -22,7 +22,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
@@ -34,11 +34,8 @@ import io.barracks.ota.client.PackageDownloadService;
 import io.barracks.ota.client.Utils;
 import io.barracks.ota.client.api.UpdateDetails;
 
-/**
- * Created by saiimons on 27/04/2016.
- */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 23)
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 25)
 public class PackageDownloadHelperTest {
 
     @Test

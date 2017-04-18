@@ -26,7 +26,7 @@ import com.google.gson.GsonBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.io.File;
@@ -35,11 +35,8 @@ import java.io.IOException;
 
 import io.barracks.client.ota.BuildConfig;
 
-/**
- * Created by saiimons on 16-04-06.
- */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 23)
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 25)
 public class UpdateDetailsTest {
 
     public static void assertValues(UpdateDetails response) {

@@ -27,10 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.ServiceController;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,8 +38,8 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import io.barracks.client.ota.BuildConfig;
-import io.barracks.ota.client.api.UpdateDetailsRequest;
 import io.barracks.ota.client.api.UpdateDetails;
+import io.barracks.ota.client.api.UpdateDetailsRequest;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
@@ -47,21 +47,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 
-/**
- * Created by saiimons on 16-04-06.
- */
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 23)
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 25)
 public class UpdateCheckServiceTest {
-    ServiceController<UpdateCheckService> controller;
-    UpdateCheckService service;
-    LocalBroadcastManager manager;
+    private ServiceController<UpdateCheckService> controller;
+    private UpdateCheckService service;
+    private LocalBroadcastManager manager;
 
     @Before
     public void prepare() {
         manager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
         controller = Robolectric.buildService(UpdateCheckService.class);
-        service = controller.attach().create().get();
+        service = controller.create().get();
     }
 
     @Test

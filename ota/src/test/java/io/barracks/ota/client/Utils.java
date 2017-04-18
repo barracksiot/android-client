@@ -16,8 +16,6 @@
 
 package io.barracks.ota.client;
 
-import android.os.Bundle;
-
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
@@ -26,37 +24,10 @@ import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.Set;
 
 import io.barracks.ota.client.api.UpdateDetails;
 
-/**
- * Created by saiimons on 16-04-12.
- */
 public class Utils {
-    public static boolean compareBundles(Bundle one, Bundle two) {
-        if (one.size() != two.size())
-            return false;
-
-        Set<String> setOne = one.keySet();
-        Object valueOne;
-        Object valueTwo;
-
-        for (String key : setOne) {
-            valueOne = one.get(key);
-            valueTwo = two.get(key);
-            if (valueOne instanceof Bundle && valueTwo instanceof Bundle && !compareBundles((Bundle) valueOne, (Bundle) valueTwo)) {
-                return false;
-            } else if (valueOne == null) {
-                if (valueTwo != null || !two.containsKey(key))
-                    return false;
-            } else if (!valueOne.equals(valueTwo)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     public static Gson getRobolectricGson(GsonBuilder builder) {
         return builder
