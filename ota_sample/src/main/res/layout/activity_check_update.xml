@@ -28,7 +28,7 @@
         android:id="@+id/version"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/version_hint"
+        android:hint="@string/unit_id_hint"
         android:inputType="text" />
 
     <Button

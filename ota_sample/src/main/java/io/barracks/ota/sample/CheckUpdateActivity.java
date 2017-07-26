@@ -18,7 +18,7 @@ package io.barracks.ota.sample;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.format.Formatter;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,7 +42,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
     private GetDevicePackagesHelper getDevicePackageHelper;
     private PackageDownloadHelper packageDownloadHelper;
     private Button check, download;
-    private EditText version;
+    private EditText unitId;
     private TextView details;
     private ProgressBar progressBar;
 
@@ -52,7 +52,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
         setContentView(R.layout.activity_check_update);
         check = (Button) findViewById(R.id.btn_check);
         download = (Button) findViewById(R.id.btn_download);
-        version = (EditText) findViewById(R.id.version);
+        unitId = (EditText) findViewById(R.id.version);
         details = (TextView) findViewById(R.id.package_details);
         progressBar = (ProgressBar) findViewById(R.id.progress);
     }
@@ -71,23 +71,23 @@ public class CheckUpdateActivity extends AppCompatActivity {
             public void onResponse(GetDevicePackagesRequest request, GetDevicePackagesResponse response) {
 
                 String availables = "";
-                for (DevicePackage p: response.getAvailable()
-                     ) {
+                for (DevicePackage p : response.getAvailable()
+                        ) {
                     availables += " " + p.getReference();
                 }
                 String unavailables = "";
-                for (DevicePackage p: response.getUnavailable()
-                     ) {
+                for (DevicePackage p : response.getUnavailable()
+                        ) {
                     unavailables += " " + p.getReference();
                 }
                 String changed = "";
-                for (DevicePackage p: response.getChanged()
-                     ) {
+                for (DevicePackage p : response.getChanged()
+                        ) {
                     changed += " " + p.getReference();
                 }
                 String unchanged = "";
-                for (DevicePackage p: response.getUnchanged()
-                     ) {
+                for (DevicePackage p : response.getUnchanged()
+                        ) {
                     availables += " " + p.getReference();
                 }
 
@@ -129,20 +129,22 @@ public class CheckUpdateActivity extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        try {
-                            Bundle customClientData = new Bundle();
-                            Bundle dataMetric = new Bundle();
-                            dataMetric.putCharSequence("status", "off");
-                            dataMetric.putFloat("temperature", 20.54f);
-                            customClientData.putBundle("dataMetric", dataMetric);
-                            customClientData.putCharSequence("userStatus", "registered");
-                            getDevicePackageHelper.requestDevicePackages(
-                                    new GetDevicePackagesRequest.Builder()
-                                            .unitId("monewpenny")
-                                            .build()
-                            );
-                        } catch (Exception e) {
-                            details.setText(getString(R.string.get_device_packages_error, e.getMessage()));
+                        if(!TextUtils.isEmpty(unitId.getText().toString())){
+                            try {
+                                Bundle customClientData = new Bundle();
+                                Bundle dataMetric = new Bundle();
+                                dataMetric.putCharSequence("status", "off");
+                                dataMetric.putFloat("temperature", 20.54f);
+                                customClientData.putBundle("dataMetric", dataMetric);
+                                customClientData.putCharSequence("userStatus", "registered");
+                                getDevicePackageHelper.requestDevicePackages(
+                                        new GetDevicePackagesRequest.Builder()
+                                                .unitId(unitId.getText().toString())
+                                                .build()
+                                );
+                            } catch (Exception e) {
+                                details.setText(getString(R.string.get_device_packages_error, e.getMessage()));
+                            }
                         }
                     }
                 }
