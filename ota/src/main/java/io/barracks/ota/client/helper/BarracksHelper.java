@@ -55,10 +55,10 @@ public class BarracksHelper {
     /**
      * Access to a helper for making update requests to the Barracks platform.
      *
-     * @return A properly configured {@link UpdateCheckHelper}
+     * @return A properly configured {@link GetDevicePackagesHelper}
      */
-    public UpdateCheckHelper getUpdateCheckHelper() {
-        return new UpdateCheckHelper(apiKey, baseUrl);
+    public GetDevicePackagesHelper getUpdateCheckHelper() {
+        return new GetDevicePackagesHelper(apiKey, baseUrl);
     }
 
     /**

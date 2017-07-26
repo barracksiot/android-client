@@ -26,7 +26,7 @@ import retrofit2.http.Url;
 /**
  * This interface describes the call to the Barracks platform which downloads a package.
  */
-public interface UpdateDownloadApi {
+public interface PackageDownloadApi {
     /**
      * The call to the Barracks platform which downloads a package.
      *
@@ -36,5 +36,5 @@ public interface UpdateDownloadApi {
      */
     @GET()
     @Streaming
-    Call<ResponseBody> downloadUpdate(@Url String url, @Header("Authorization") String key);
+    Call<ResponseBody> downloadPackage(@Url String url, @Header("Authorization") String key);
 }

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2016 Barracks Solutions Inc.
+ *    Copyright 2017 Barracks Solutions Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,27 +16,19 @@
 
 package io.barracks.ota.client.helper;
 
-import io.barracks.ota.client.api.UpdateDetails;
-import io.barracks.ota.client.api.UpdateDetailsRequest;
+import io.barracks.ota.client.api.GetDevicePackagesRequest;
+import io.barracks.ota.client.api.GetDevicePackagesResponse;
 
 /**
- * This callback interface is used when requesting to the Barracks platform using the {@link UpdateCheckHelper}.
+ * This callback interface is used when requesting to the Barracks platform using the {@link GetDevicePackagesHelper}.
  */
-public interface UpdateCheckCallback {
-    /**
-     * This method is called when update details are available.
-     *
-     * @param request The request sent to the Barracks platform.
-     * @param details The details of the available update.
-     */
-    void onUpdateAvailable(UpdateDetailsRequest request, UpdateDetails details);
+public interface GetDevicePackagesCallback {
 
     /**
-     * This method is called when there is no update available.
-     *
-     * @param request The request sent to the Barracks platform.
+     * @param request  The request sent to the Barracks platform.
+     * @param response The details of the device packages wrapped in a {@link GetDevicePackagesResponse}
      */
-    void onUpdateUnavailable(UpdateDetailsRequest request);
+    void onResponse(GetDevicePackagesRequest request, GetDevicePackagesResponse response);
 
     /**
      * This method is called when an error occured during the request.
@@ -44,5 +36,5 @@ public interface UpdateCheckCallback {
      * @param request The request sent to the Barracks platform.
      * @param t       The exception caught during the request.
      */
-    void onUpdateRequestError(UpdateDetailsRequest request, Throwable t);
+    void onError(GetDevicePackagesRequest request, Throwable t);
 }

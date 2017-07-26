@@ -25,12 +25,9 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import io.barracks.ota.client.api.UpdateDetails;
-import io.barracks.ota.client.api.UpdateDetailsRequest;
 import io.barracks.ota.client.helper.BarracksHelper;
 import io.barracks.ota.client.helper.PackageDownloadCallback;
 import io.barracks.ota.client.helper.PackageDownloadHelper;
-import io.barracks.ota.client.helper.UpdateCheckCallback;
 import io.barracks.ota.client.helper.UpdateCheckHelper;
 
 public class CheckUpdateActivity extends AppCompatActivity {

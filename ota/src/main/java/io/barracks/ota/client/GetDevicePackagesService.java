@@ -1,5 +1,5 @@
 /*
- *    Copyright 2016 Barracks Solutions Inc.
+ *    Copyright 2017 Barracks Solutions Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -40,36 +39,35 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import io.barracks.ota.client.api.UpdateCheckApi;
-import io.barracks.ota.client.api.UpdateDetails;
-import io.barracks.ota.client.api.UpdateDetailsRequest;
+import io.barracks.ota.client.api.GetDevicePackagesApi;
+import io.barracks.ota.client.api.GetDevicePackagesRequest;
+import io.barracks.ota.client.api.GetDevicePackagesResponse;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static io.barracks.ota.client.UpdateCheckService.UPDATE_REQUEST_ERROR;
+
 /**
- * This service is used to handle the request to the barracks service in the background.<br>
- * It uses the {@link LocalBroadcastManager} to send updates about the request, using the categories
- * for {@link UpdateCheckService#UPDATE_AVAILABLE an available update},
- * {@link UpdateCheckService#UPDATE_UNAVAILABLE no update available} and
- * {@link UpdateCheckService#UPDATE_REQUEST_ERROR failure} for a defined {@link UpdateCheckService#ACTION_CHECK action}
- *
- * @see io.barracks.ota.client.helper.BarracksHelper
+ * Created by Paul on 17-07-26.
  */
-public class UpdateCheckService extends IntentService implements TypeAdapterFactory {
+
+public class GetDevicePackagesService extends IntentService implements TypeAdapterFactory {
+
     /**
      * Defines the action used to start the request to the Barracks platform.
      *
      * @see Intent#setAction(String)
      */
-    public static final String ACTION_CHECK = "io.barracks.ota.client.CHECK_UPDATE";
+    public static final String ACTION_GET = "io.barracks.ota.client.GET_DEVICE_PACKAGES";
+
 
     /**
-     * This key is used to specify the {@link UpdateDetailsRequest request} used as a reference
+     * This key is used to specify the {@link io.barracks.ota.client.api.GetDevicePackagesRequest} used as a reference
      * to call the Barracks platform.
      */
-    public static final String EXTRA_REQUEST = "check_request";
+    public static final String EXTRA_REQUEST = "getRequest";
     /**
      * This key is used to specify the url used to call the Barracks platform.
      */
@@ -80,53 +78,49 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
     public static final String EXTRA_API_KEY = "apiKey";
 
     /**
-     * Category used to notify when some {@link UpdateDetails} are available.
-     */
-    public static final String UPDATE_AVAILABLE = "io.barracks.ota.client.UPDATE_AVAILABLE";
-    /**
-     * Category used to notify when no details are available.
-     */
-    public static final String UPDATE_UNAVAILABLE = "io.barracks.ota.client.update_available.UPDATE_UNAVAILABLE";
-    /**
-     * Category used to notify when a request has failed.
-     */
-    public static final String UPDATE_REQUEST_ERROR = "io.barracks.ota.client.update_available.UPDATE_REQUEST_ERROR";
-
-    /**
-     * This key is used to report an {@link Throwable exception} thrown during the request.
-     */
-    public static final String EXTRA_EXCEPTION = "exception";
-    /**
-     * This key is used to report the {@link UpdateDetails details} received from the Barracks platform.
-     */
-    public static final String EXTRA_UPDATE_DETAILS = "updateDetails";
-    /**
      * This key is used to report the callback's identifier
      */
     public static final String EXTRA_CALLBACK = "callback";
 
     /**
+     * This key is used to report an {@link Throwable exception} thrown during the request.
+     */
+    public static final String EXTRA_EXCEPTION = "exception";
+
+    /**
+     * This key is used to report the {@link io.barracks.ota.client.api.GetDevicePackagesResponse} received from the Barracks platform.
+     */
+    public static final String EXTRA_DEVICE_PACKAGES = "devicePackages";
+
+    /**
+     * Category used to notify when a request has failed.
+     */
+    public static final String GET_DEVICE_PACKAGES_REQUEST_ERROR = "io.barracks.ota.client.update_available.GET_DEVICE_PACKAGES_REQUEST_ERROR";
+
+
+    /**
+     * Category used to notify when a request has failed.
+     */
+    public static final String GET_DEVICE_PACKAGES_REQUEST_RESPONSE = "io.barracks.ota.client.update_available.GET_DEVICE_PACKAGES_REQUEST_RESPONSE";
+
+
+    /**
      * Intent filter used by {@link android.content.BroadcastReceiver} to register to the {@link LocalBroadcastManager}
      */
-    public static final IntentFilter ACTION_CHECK_FILTER;
+    public static final IntentFilter ACTION_GET_FILTER;
 
     static {
-        ACTION_CHECK_FILTER = new IntentFilter(ACTION_CHECK);
-        ACTION_CHECK_FILTER.addCategory(UPDATE_AVAILABLE);
-        ACTION_CHECK_FILTER.addCategory(UPDATE_UNAVAILABLE);
-        ACTION_CHECK_FILTER.addCategory(UPDATE_REQUEST_ERROR);
-    }
-
-    public UpdateCheckService() {
-        this(UpdateCheckService.class.getSimpleName());
+        ACTION_GET_FILTER = new IntentFilter(ACTION_GET);
+        ACTION_GET_FILTER.addCategory(GET_DEVICE_PACKAGES_REQUEST_ERROR);
+        ACTION_GET_FILTER.addCategory(GET_DEVICE_PACKAGES_REQUEST_RESPONSE);
     }
 
     /**
-     * Creates an {@link UpdateCheckService}.
+     * Create an {@link GetDevicePackagesService}.
      *
      * @param name Used to name the worker thread, important only for debugging.
      */
-    public UpdateCheckService(String name) {
+    public GetDevicePackagesService(String name) {
         super(name);
     }
 
@@ -134,29 +128,22 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
      * {@inheritDoc}
      */
     @Override
-    protected void onHandleIntent(Intent intent) {
+    protected void onHandleIntent(@Nullable Intent intent) {
         switch (intent.getAction()) {
-            case ACTION_CHECK:
-                checkUpdate(
+            case ACTION_GET:
+                getDevicePackages(
                         intent.getStringExtra(EXTRA_API_KEY),
                         intent.getStringExtra(EXTRA_URL),
-                        intent.<UpdateDetailsRequest>getParcelableExtra(EXTRA_REQUEST),
+                        intent.<GetDevicePackagesRequest>getParcelableExtra(EXTRA_REQUEST),
                         intent.getIntExtra(EXTRA_CALLBACK, 0)
+
                 );
-                break;
+
         }
     }
 
-    /**
-     * This method processes the request and notifies the rest of the application using the {@link LocalBroadcastManager}.
-     *
-     * @param apiKey   The API key provided by the Barracks platform.
-     * @param baseUrl  The url used to call the Barracks platform
-     * @param request  The {@link UpdateDetailsRequest request} parameters for the Barracks platform.
-     * @param callback The callback identifier.
-     */
-    private void checkUpdate(String apiKey, String baseUrl, UpdateDetailsRequest request, int callback) {
-        Intent intent = new Intent(ACTION_CHECK);
+    private void getDevicePackages(String apiKey, String baseUrl, GetDevicePackagesRequest request, int callback) {
+        Intent intent = new Intent(ACTION_GET);
         intent.putExtra(EXTRA_CALLBACK, callback);
         intent.putExtra(EXTRA_REQUEST, request);
         try {
@@ -174,17 +161,13 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
                     .addConverterFactory(GsonConverterFactory.create(setUpGsonBuilder(builder).create()))
                     .baseUrl(baseUrl)
                     .build();
-            UpdateCheckApi api = retrofit.create(UpdateCheckApi.class);
-            Call<UpdateDetails> call = api.checkUpdate(apiKey, request);
-            Response<UpdateDetails> response = call.execute();
+            GetDevicePackagesApi api = retrofit.create(GetDevicePackagesApi.class);
+            Call<GetDevicePackagesResponse> call = api.getDevicePackages(apiKey, request);
+            Response<GetDevicePackagesResponse> response = call.execute();
             if (response.isSuccessful()) {
-                UpdateDetails update = response.body();
-                if (update == null) {
-                    intent.addCategory(UPDATE_UNAVAILABLE);
-                } else {
-                    intent.addCategory(UPDATE_AVAILABLE);
-                    intent.putExtra(EXTRA_UPDATE_DETAILS, update);
-                }
+                GetDevicePackagesResponse getDevicePackagesResponse = response.body();
+                intent.addCategory(GET_DEVICE_PACKAGES_REQUEST_RESPONSE);
+                intent.putExtra(EXTRA_DEVICE_PACKAGES, getDevicePackagesResponse);
             } else {
                 throw new RuntimeException(response.code() + " " + response.message());
             }
@@ -193,6 +176,7 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
             intent.putExtra(UpdateCheckService.EXTRA_EXCEPTION, t);
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+
     }
 
     /**
@@ -212,10 +196,10 @@ public class UpdateCheckService extends IntentService implements TypeAdapterFact
      *
      * @param gson The {@link Gson} parser instance.
      * @return The {@link TypeAdapter} for the {@link Bundle}
-     * @see DefaultBundleAdapter The default implementation.
+     * @see GetDevicePackagesService.DefaultBundleAdapter The default implementation.
      */
     private TypeAdapter<Bundle> getBundleAdapter(Gson gson) {
-        return new DefaultBundleAdapter(gson);
+        return new UpdateCheckService.DefaultBundleAdapter(gson);
     }
 
     /**

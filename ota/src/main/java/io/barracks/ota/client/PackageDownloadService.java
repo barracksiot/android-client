@@ -35,8 +35,8 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import io.barracks.ota.client.api.UpdateDetails;
-import io.barracks.ota.client.api.UpdateDownloadApi;
+import io.barracks.ota.client.DevicePackages.AvailablePackage;
+import io.barracks.ota.client.api.PackageDownloadApi;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -60,9 +60,9 @@ public class PackageDownloadService extends IntentService {
     public static final String ACTION_DOWNLOAD_PACKAGE = "io.barracks.ota.client.DOWNLOAD_PACKAGE";
 
     /**
-     * This key is used to specify the {@link UpdateDetails details} used as a reference for downloading a package.
+     * This key is used to specify the {@link AvailablePackage package} used as a reference for downloading a package.
      */
-    public static final String EXTRA_UPDATE_DETAILS = "updateDetails";
+    public static final String EXTRA_AVAILABLE_PACKAGE = "availablePackage";
     /**
      * This key is used to specify the API key used for downloading a package.
      */
@@ -137,7 +137,7 @@ public class PackageDownloadService extends IntentService {
                         intent.getStringExtra(EXTRA_API_KEY),
                         intent.getStringExtra(EXTRA_TMP_DEST),
                         intent.getStringExtra(EXTRA_FINAL_DEST),
-                        intent.<UpdateDetails>getParcelableExtra(EXTRA_UPDATE_DETAILS),
+                        intent.<AvailablePackage>getParcelableExtra(EXTRA_AVAILABLE_PACKAGE),
                         intent.getIntExtra(EXTRA_CALLBACK, -1)
                 );
                 break;
@@ -147,23 +147,22 @@ public class PackageDownloadService extends IntentService {
     /**
      * This method is proceeding with the download and notifying the rest of the application using
      * the {@link LocalBroadcastManager}.
-     *
-     * @param apiKey    The API key provided by the Barracks platform.
+     *  @param apiKey    The API key provided by the Barracks platform.
      * @param tmpDest   The temporary path for the download.
      * @param finalDest The final path for the download.
-     * @param update    The {@link UpdateDetails} retrieved from the Barracks platform.
+     * @param availablePackage    The {@link AvailablePackage} retrieved from the Barracks platform.
      * @param callback  The callback identifier.
      */
-    private void downloadPackage(String apiKey, String tmpDest, String finalDest, UpdateDetails update, int callback) {
+    private void downloadPackage(String apiKey, String tmpDest, String finalDest, AvailablePackage availablePackage, int callback) {
         File tmp = TextUtils.isEmpty(tmpDest) ? new File(getFilesDir(), Defaults.DEFAULT_TMP_DL_DESTINATION) : new File(tmpDest);
         File destination = TextUtils.isEmpty(finalDest) ? new File(getFilesDir(), Defaults.DEFAULT_FINAL_DL_DESTINATION) : new File(finalDest);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(Defaults.DEFAULT_BASE_URL).build();
-        UpdateDownloadApi loader = retrofit.create(UpdateDownloadApi.class);
-        Call<ResponseBody> call = loader.downloadUpdate(update.getPackageInfo().getUrl(), apiKey);
+        PackageDownloadApi loader = retrofit.create(PackageDownloadApi.class);
+        Call<ResponseBody> call = loader.downloadPackage(availablePackage.getUrl(), apiKey);
 
         // Setup the files to be loaded and moved
         if (!setupFile(tmp) || !setupFile(destination)) {
-            notifyError(update, new IOException("Failed to setup " + tmp.getPath() + " or " + destination.getPath()), callback);
+            notifyError(availablePackage, new IOException("Failed to setup " + tmp.getPath() + " or " + destination.getPath()), callback);
             return;
         }
 
@@ -173,7 +172,7 @@ public class PackageDownloadService extends IntentService {
             os = new FileOutputStream(tmp);
             Response<ResponseBody> response = call.execute();
             if (!response.isSuccessful()) {
-                notifyError(update, new IOException("Call to : " + call.request().url().toString() + " failed : " + response.code() + " " + response.message()), callback);
+                notifyError(availablePackage, new IOException("Call to : " + call.request().url().toString() + " failed : " + response.code() + " " + response.message()), callback);
                 return;
             }
             InputStream is = response.body().byteStream();
@@ -183,12 +182,12 @@ public class PackageDownloadService extends IntentService {
             while ((read = is.read(buff)) != -1) {
                 os.write(buff, 0, read);
                 total += read;
-                notifyProgress(update, (int) (total * 100 / update.getPackageInfo().getSize()), callback);
+                notifyProgress(availablePackage, (int) (total * 100 / availablePackage.getSize()), callback);
             }
-            checkPackageIntegrity(update, tmp);
+            checkPackageIntegrity(availablePackage, tmp);
             moveToFinalDestination(tmp, destination);
         } catch (IOException | GeneralSecurityException e) {
-            notifyError(update, e, callback);
+            notifyError(availablePackage, e, callback);
             return;
         } finally {
             if (os != null) {
@@ -200,22 +199,21 @@ public class PackageDownloadService extends IntentService {
             }
         }
 
-        notifySuccess(update, destination, callback);
+        notifySuccess(availablePackage, destination, callback);
     }
 
     /**
      * Convenience method for notifying the application of a download completion using the {@link LocalBroadcastManager}
-     *
-     * @param details     The {@link UpdateDetails} retrieved from the Barracks platform.
+     * @param availablePackage     The {@link AvailablePackage} retrieved from the Barracks platform.
      * @param destination The destination where the file has been moved.
      * @param callback    The callback identifier.
      */
-    private void notifySuccess(UpdateDetails details, File destination, int callback) {
+    private void notifySuccess(AvailablePackage availablePackage, File destination, int callback) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.sendBroadcast(
                 new Intent(ACTION_DOWNLOAD_PACKAGE)
                         .addCategory(DOWNLOAD_SUCCESS)
-                        .putExtra(EXTRA_UPDATE_DETAILS, details)
+                        .putExtra(EXTRA_AVAILABLE_PACKAGE, availablePackage)
                         .putExtra(EXTRA_CALLBACK, callback)
                         .putExtra(EXTRA_FINAL_DEST, destination.getPath())
         );
@@ -223,17 +221,16 @@ public class PackageDownloadService extends IntentService {
 
     /**
      * Convenience method for notifying the application of a download failure using the {@link LocalBroadcastManager}
-     *
-     * @param details   The {@link UpdateDetails} retrieved from the Barracks platform.
+     * @param availablePackage   The {@link AvailablePackage} retrieved from the Barracks platform.
      * @param exception The exception caught during the process.
      * @param callback  The callback identifier.
      */
-    private void notifyError(UpdateDetails details, Exception exception, int callback) {
+    private void notifyError(AvailablePackage availablePackage, Exception exception, int callback) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.sendBroadcast(
                 new Intent(ACTION_DOWNLOAD_PACKAGE)
                         .addCategory(DOWNLOAD_ERROR)
-                        .putExtra(EXTRA_UPDATE_DETAILS, details)
+                        .putExtra(EXTRA_AVAILABLE_PACKAGE, availablePackage)
                         .putExtra(EXTRA_CALLBACK, callback)
                         .putExtra(EXTRA_EXCEPTION, exception)
         );
@@ -241,17 +238,16 @@ public class PackageDownloadService extends IntentService {
 
     /**
      * Convenience method for notifying the application of a download progress using the {@link LocalBroadcastManager}
-     *
-     * @param details  The {@link UpdateDetails} retrieved from the Barracks platform.
+     *  @param availablePackage  The {@link AvailablePackage} retrieved from the Barracks platform.
      * @param progress The progress percentage.
      * @param callback The callback identifier.
      */
-    private void notifyProgress(UpdateDetails details, int progress, int callback) {
+    private void notifyProgress(AvailablePackage availablePackage, int progress, int callback) {
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
         manager.sendBroadcast(
                 new Intent(ACTION_DOWNLOAD_PACKAGE)
                         .addCategory(DOWNLOAD_PROGRESS)
-                        .putExtra(EXTRA_UPDATE_DETAILS, details)
+                        .putExtra(EXTRA_AVAILABLE_PACKAGE, availablePackage)
                         .putExtra(EXTRA_CALLBACK, callback)
                         .putExtra(EXTRA_PROGRESS, progress)
         );
@@ -279,12 +275,12 @@ public class PackageDownloadService extends IntentService {
      * This method checks the package's <code>file</code> integrity.<br>
      * It uses the md5 provided in the <code>details</code> parameter.
      *
-     * @param details The {@link UpdateDetails} retrieved from the Barracks platform.
+     * @param availablePackage The {@link AvailablePackage} retrieved from the Barracks platform.
      * @param file    The file which was downloaded.
      * @throws IOException              If an exception is raised while accessing the file.
      * @throws GeneralSecurityException If the hash verification fails.
      */
-    protected void checkPackageIntegrity(UpdateDetails details, File file) throws IOException, GeneralSecurityException {
+    protected void checkPackageIntegrity(AvailablePackage availablePackage, File file) throws IOException, GeneralSecurityException {
         InputStream is = null;
         MessageDigest md = null;
         try {
@@ -311,8 +307,8 @@ public class PackageDownloadService extends IntentService {
             for (byte b : digest) {
                 sb.append(String.format("%02x", b));
             }
-            if (!sb.toString().equals(details.getPackageInfo().getMd5())) {
-                throw new DigestException("Wrong file signature " + sb.toString() + " - " + details.getPackageInfo().getMd5());
+            if (!sb.toString().equals(availablePackage.getMd5())) {
+                throw new DigestException("Wrong file signature " + sb.toString() + " - " + availablePackage.getMd5());
             }
         }
     }

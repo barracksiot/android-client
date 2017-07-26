@@ -1,5 +1,5 @@
 /*
- *    Copyright 2016 Barracks Solutions Inc.
+ *    Copyright 2017 Barracks Solutions Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,18 +22,21 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 /**
- * This interface describes the call to the Barracks platform which requests {@link UpdateDetails}.
+ * Created by Paul on 17-07-17.
  */
-public interface UpdateCheckApi {
-    String ENDPOINT = "api/device/update/check";
+
+public interface GetDevicePackagesApi {
+
+    String ENDPOINT = "https://app.barracks.io/api/device/resolve";
 
     /**
-     * The call to the Barracks platform which requests {@link UpdateDetails}.
+     * * The call to the Barracks platform which requests {@link GetDevicePackagesResponse}.
      *
      * @param key     The API key provided by the Barracks platform.
-     * @param request The {@link UpdateDetailsRequest request} parameters for the Barracks platform.
-     * @return A {@link Call} to execute in order to retrieve the {@link UpdateDetails}
+     * @param request The {@link GetDevicePackagesRequest request} parameters for the Barracks platform.
+     * @return A {@link Call} to execute in order to retrieve the {@link GetDevicePackagesResponse}
      */
     @POST(ENDPOINT)
-    Call<UpdateDetails> checkUpdate(@Header("Authorization") String key, @Body UpdateDetailsRequest request);
+    Call<GetDevicePackagesResponse> getDevicePackages(@Header("Authorization") String key, @Body GetDevicePackagesRequest request);
+
 }

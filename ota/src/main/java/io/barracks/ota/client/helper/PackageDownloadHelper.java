@@ -23,7 +23,6 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import io.barracks.ota.client.PackageDownloadService;
 import io.barracks.ota.client.UpdateCheckService;
-import io.barracks.ota.client.api.UpdateDetails;
 
 /**
  * A helper which makes it easier to use the {@link PackageDownloadService}.
@@ -56,11 +55,11 @@ public class PackageDownloadHelper extends BroadcastReceiver {
             case PackageDownloadService.ACTION_DOWNLOAD_PACKAGE:
                 if (callback.hashCode() == intent.getIntExtra(UpdateCheckService.EXTRA_CALLBACK, 0)) {
                     if (intent.hasCategory(PackageDownloadService.DOWNLOAD_PROGRESS)) {
-                        callback.onDownloadProgress(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS), intent.getIntExtra(PackageDownloadService.EXTRA_PROGRESS, 0));
+                        callback.onDownloadProgress(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), intent.getIntExtra(PackageDownloadService.EXTRA_PROGRESS, 0));
                     } else if (intent.hasCategory(PackageDownloadService.DOWNLOAD_SUCCESS)) {
-                        callback.onDownloadSuccess(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS), intent.getStringExtra(PackageDownloadService.EXTRA_FINAL_DEST));
+                        callback.onDownloadSuccess(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), intent.getStringExtra(PackageDownloadService.EXTRA_FINAL_DEST));
                     } else if (intent.hasCategory(PackageDownloadService.DOWNLOAD_ERROR)) {
-                        callback.onDownloadFailure(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS), (Throwable) intent.getSerializableExtra(PackageDownloadService.EXTRA_EXCEPTION));
+                        callback.onDownloadFailure(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), (Throwable) intent.getSerializableExtra(PackageDownloadService.EXTRA_EXCEPTION));
                     }
                 }
                 break;
@@ -117,7 +116,7 @@ public class PackageDownloadHelper extends BroadcastReceiver {
                 .putExtra(PackageDownloadService.EXTRA_TMP_DEST, tmpFile)
                 .putExtra(PackageDownloadService.EXTRA_FINAL_DEST, finalFile)
                 .putExtra(PackageDownloadService.EXTRA_CALLBACK, callback.hashCode())
-                .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, response);
+                .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, response);
         context.startService(intent);
     }
 }

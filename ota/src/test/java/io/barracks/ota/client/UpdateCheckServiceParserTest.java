@@ -20,13 +20,6 @@ import android.os.Bundle;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -39,7 +32,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import io.barracks.client.ota.BuildConfig;
-import io.barracks.ota.client.api.UpdateDetails;
 import io.barracks.ota.client.api.UpdateDetailsTest;
 
 /**

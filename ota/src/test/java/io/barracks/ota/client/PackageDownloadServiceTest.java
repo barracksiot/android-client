@@ -38,8 +38,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 
 import io.barracks.client.ota.BuildConfig;
-import io.barracks.ota.client.api.PackageInfo;
-import io.barracks.ota.client.api.UpdateDetails;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -152,7 +150,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackSuccess, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, successResponse)
         );
         manager.unregisterReceiver(callbackSuccess);
         assertTrue(callbackSuccess.success);
@@ -164,7 +162,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callBackProgress, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, successResponse)
         );
         manager.unregisterReceiver(callBackProgress);
         assertTrue(callBackProgress.progress);
@@ -176,7 +174,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackSuccess, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, successResponse)
                         .putExtra(PackageDownloadService.EXTRA_TMP_DEST, new File("tmp/tmp.dl"))
                         .putExtra(PackageDownloadService.EXTRA_FINAL_DEST, new File("final/final.dl"))
         );
@@ -199,7 +197,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, successResponse)
                         .putExtra(PackageDownloadService.EXTRA_TMP_DEST, f.getPath())
         );
         assertTrue(callbackFailure.failure);
@@ -210,7 +208,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, successResponse)
                         .putExtra(PackageDownloadService.EXTRA_FINAL_DEST, f.getPath())
         );
         assertTrue(callbackFailure.failure);
@@ -221,7 +219,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, successResponse)
                         .putExtra(PackageDownloadService.EXTRA_TMP_DEST, new File(f, "dircantbe").getPath())
         );
         assertTrue(callbackFailure.failure);
@@ -234,7 +232,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, successResponse)
+                        .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, successResponse)
                         .putExtra(PackageDownloadService.EXTRA_FINAL_DEST, f.getPath())
         );
         assertTrue(callbackFailure.failure);
@@ -247,7 +245,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, failureResponse)
+                        .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, failureResponse)
         );
         assertTrue(callbackFailure.failure);
         manager.unregisterReceiver(callbackFailure);
@@ -257,7 +255,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, ioErrorResponse)
+                        .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, ioErrorResponse)
         );
         assertTrue(callbackFailure.failure);
         manager.unregisterReceiver(callbackFailure);
@@ -267,7 +265,7 @@ public class PackageDownloadServiceTest {
         manager.registerReceiver(callbackFailure, PackageDownloadService.ACTION_DOWNLOAD_PACKAGE_FILTER);
         service.onHandleIntent(
                 new Intent(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
-                        .putExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS, signatureFailResponse)
+                        .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, signatureFailResponse)
         );
         assertTrue(callbackFailure.failure);
         manager.unregisterReceiver(callbackFailure);

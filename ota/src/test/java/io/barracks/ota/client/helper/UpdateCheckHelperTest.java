@@ -29,8 +29,6 @@ import org.robolectric.annotation.Config;
 
 import io.barracks.client.ota.BuildConfig;
 import io.barracks.ota.client.UpdateCheckService;
-import io.barracks.ota.client.api.UpdateDetails;
-import io.barracks.ota.client.api.UpdateDetailsRequest;
 
 /**
  * Created by saiimons on 16-04-07.

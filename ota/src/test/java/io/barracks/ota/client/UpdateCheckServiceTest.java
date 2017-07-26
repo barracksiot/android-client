@@ -38,8 +38,6 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import io.barracks.client.ota.BuildConfig;
-import io.barracks.ota.client.api.UpdateDetailsRequest;
-import io.barracks.ota.client.api.UpdateDetails;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 

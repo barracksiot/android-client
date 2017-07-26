@@ -32,7 +32,6 @@ import java.io.FileNotFoundException;
 import io.barracks.client.ota.BuildConfig;
 import io.barracks.ota.client.PackageDownloadService;
 import io.barracks.ota.client.Utils;
-import io.barracks.ota.client.api.UpdateDetails;
 
 /**
  * Created by saiimons on 27/04/2016.
@@ -97,7 +96,7 @@ public class PackageDownloadHelperTest {
         Assert.assertEquals(intent.getComponent().getClassName(), PackageDownloadService.class.getName());
         Assert.assertEquals(intent.getAction(), PackageDownloadService.ACTION_DOWNLOAD_PACKAGE);
         Assert.assertEquals(callback.hashCode(), intent.getIntExtra(PackageDownloadService.EXTRA_CALLBACK, 0));
-        UpdateDetails response2 = intent.getParcelableExtra(PackageDownloadService.EXTRA_UPDATE_DETAILS);
+        UpdateDetails response2 = intent.getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE);
         Assert.assertNotNull(response2);
         helper.unbind(RuntimeEnvironment.application);
     }

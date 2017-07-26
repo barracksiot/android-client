@@ -16,8 +16,6 @@
 
 package io.barracks.ota.client.helper;
 
-import io.barracks.ota.client.api.UpdateDetails;
-
 /**
  * This callback interface is used when downloading a package using the {@link PackageDownloadHelper}.
  */

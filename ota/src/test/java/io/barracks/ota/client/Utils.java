@@ -28,8 +28,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Set;
 
-import io.barracks.ota.client.api.UpdateDetails;
-
 /**
  * Created by saiimons on 16-04-12.
  */
