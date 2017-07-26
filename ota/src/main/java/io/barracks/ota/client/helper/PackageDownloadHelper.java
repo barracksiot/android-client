@@ -21,8 +21,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
+import io.barracks.ota.client.DevicePackages.AvailablePackage;
+import io.barracks.ota.client.GetDevicePackagesService;
 import io.barracks.ota.client.PackageDownloadService;
-import io.barracks.ota.client.UpdateCheckService;
 
 /**
  * A helper which makes it easier to use the {@link PackageDownloadService}.
@@ -53,13 +54,13 @@ public class PackageDownloadHelper extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         switch (intent.getAction()) {
             case PackageDownloadService.ACTION_DOWNLOAD_PACKAGE:
-                if (callback.hashCode() == intent.getIntExtra(UpdateCheckService.EXTRA_CALLBACK, 0)) {
+                if (callback.hashCode() == intent.getIntExtra(GetDevicePackagesService.EXTRA_CALLBACK, 0)) {
                     if (intent.hasCategory(PackageDownloadService.DOWNLOAD_PROGRESS)) {
-                        callback.onDownloadProgress(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), intent.getIntExtra(PackageDownloadService.EXTRA_PROGRESS, 0));
+                        callback.onDownloadProgress(intent.<AvailablePackage>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), intent.getIntExtra(PackageDownloadService.EXTRA_PROGRESS, 0));
                     } else if (intent.hasCategory(PackageDownloadService.DOWNLOAD_SUCCESS)) {
-                        callback.onDownloadSuccess(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), intent.getStringExtra(PackageDownloadService.EXTRA_FINAL_DEST));
+                        callback.onDownloadSuccess(intent.<AvailablePackage>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), intent.getStringExtra(PackageDownloadService.EXTRA_FINAL_DEST));
                     } else if (intent.hasCategory(PackageDownloadService.DOWNLOAD_ERROR)) {
-                        callback.onDownloadFailure(intent.<UpdateDetails>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), (Throwable) intent.getSerializableExtra(PackageDownloadService.EXTRA_EXCEPTION));
+                        callback.onDownloadFailure(intent.<AvailablePackage>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), (Throwable) intent.getSerializableExtra(PackageDownloadService.EXTRA_EXCEPTION));
                     }
                 }
                 break;
@@ -95,28 +96,28 @@ public class PackageDownloadHelper extends BroadcastReceiver {
     /**
      * This method request requests the download of a package.
      *
-     * @param response The details received from the Barracks platform.
-     * @see #requestDownload(UpdateDetails, String, String)
+     * @param availablePackage The details received from the Barracks platform.
+     * @see #requestDownload(AvailablePackage, String, String)
      */
-    public void requestDownload(UpdateDetails response) {
-        requestDownload(response, null, null);
+    public void requestDownload(AvailablePackage availablePackage) {
+        requestDownload(availablePackage, null, null);
     }
 
     /**
      * This method request requests the download of a package.<br>
      *
-     * @param response  The details received from the Barracks platform.
-     * @param tmpFile   The temporary destination of the package.
-     * @param finalFile The final destination of the package.
+     * @param availablePackage The details received from the Barracks platform.
+     * @param tmpFile          The temporary destination of the package.
+     * @param finalFile        The final destination of the package.
      */
-    public void requestDownload(UpdateDetails response, String tmpFile, String finalFile) {
+    public void requestDownload(AvailablePackage availablePackage, String tmpFile, String finalFile) {
         Intent intent = new Intent(context, PackageDownloadService.class)
                 .setAction(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
                 .putExtra(PackageDownloadService.EXTRA_API_KEY, apiKey)
                 .putExtra(PackageDownloadService.EXTRA_TMP_DEST, tmpFile)
                 .putExtra(PackageDownloadService.EXTRA_FINAL_DEST, finalFile)
                 .putExtra(PackageDownloadService.EXTRA_CALLBACK, callback.hashCode())
-                .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, response);
+                .putExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE, availablePackage);
         context.startService(intent);
     }
 }

@@ -25,15 +25,21 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import io.barracks.ota.client.DevicePackages.AvailablePackage;
+import io.barracks.ota.client.DevicePackages.ChangedPackage;
+import io.barracks.ota.client.DevicePackages.DevicePackage;
+import io.barracks.ota.client.api.GetDevicePackagesRequest;
+import io.barracks.ota.client.api.GetDevicePackagesResponse;
 import io.barracks.ota.client.helper.BarracksHelper;
+import io.barracks.ota.client.helper.GetDevicePackagesCallback;
+import io.barracks.ota.client.helper.GetDevicePackagesHelper;
 import io.barracks.ota.client.helper.PackageDownloadCallback;
 import io.barracks.ota.client.helper.PackageDownloadHelper;
-import io.barracks.ota.client.helper.UpdateCheckHelper;
 
 public class CheckUpdateActivity extends AppCompatActivity {
 
     private static final String TAG = CheckUpdateActivity.class.getSimpleName();
-    private UpdateCheckHelper updateCheckHelper;
+    private GetDevicePackagesHelper getDevicePackageHelper;
     private PackageDownloadHelper packageDownloadHelper;
     private Button check, download;
     private EditText version;
@@ -55,29 +61,48 @@ public class CheckUpdateActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        BarracksHelper helper = new BarracksHelper("API_KEY", "https://app.barracks.io/");
+        BarracksHelper helper = new BarracksHelper("747ae2efa7c0e68fa7dda312aaea2ddeb8bfcffb003c9205b509ae430760cabf", "https://app.barracks.io/");
 
-        updateCheckHelper = helper.getUpdateCheckHelper();
-        updateCheckHelper.bind(this, new UpdateCheckCallback() {
+        getDevicePackageHelper = helper.getUpdateCheckHelper();
+        getDevicePackageHelper.bind(this, new GetDevicePackagesCallback() {
+
+
             @Override
-            public void onUpdateAvailable(UpdateDetailsRequest request, UpdateDetails response) {
-                details.setText(getString(
-                        R.string.update_description,
-                        response.getVersionId(),
-                        Formatter.formatFileSize(CheckUpdateActivity.this, response.getPackageInfo().getSize()))
-                );
+            public void onResponse(GetDevicePackagesRequest request, GetDevicePackagesResponse response) {
+
+                String availables = "";
+                for (DevicePackage p: response.getAvailable()
+                     ) {
+                    availables += " " + p.getReference();
+                }
+                String unavailables = "";
+                for (DevicePackage p: response.getUnavailable()
+                     ) {
+                    unavailables += " " + p.getReference();
+                }
+                String changed = "";
+                for (DevicePackage p: response.getChanged()
+                     ) {
+                    changed += " " + p.getReference();
+                }
+                String unchanged = "";
+                for (DevicePackage p: response.getUnchanged()
+                     ) {
+                    availables += " " + p.getReference();
+                }
+
+                String pkgs = "Available : " + availables + "\n";
+                pkgs += "Unavailable : " + unavailables + "\n";
+                pkgs += "Changed : " + changed + "\n";
+                pkgs += "Unchange : " + unchanged + "\n";
+
+                details.setText(pkgs);
                 details.setTag(response);
             }
 
             @Override
-            public void onUpdateUnavailable(UpdateDetailsRequest request) {
-                details.setText(getString(R.string.update_unavailable));
-                details.setTag(null);
-            }
-
-            @Override
-            public void onUpdateRequestError(UpdateDetailsRequest request, Throwable t) {
-                details.setText(getString(R.string.update_check_error, t.getMessage()));
+            public void onError(GetDevicePackagesRequest request, Throwable t) {
+                details.setText(getString(R.string.get_device_packages_error, t.getMessage()));
                 details.setTag(null);
             }
         });
@@ -85,17 +110,17 @@ public class CheckUpdateActivity extends AppCompatActivity {
         packageDownloadHelper = helper.getPackageDownloadHelper();
         packageDownloadHelper.bind(this, new PackageDownloadCallback() {
             @Override
-            public void onDownloadSuccess(UpdateDetails details, String path) {
+            public void onDownloadSuccess(AvailablePackage details, String path) {
                 progressBar.setProgress(0);
             }
 
             @Override
-            public void onDownloadFailure(UpdateDetails details, Throwable throwable) {
+            public void onDownloadFailure(AvailablePackage details, Throwable throwable) {
                 progressBar.setProgress(0);
             }
 
             @Override
-            public void onDownloadProgress(UpdateDetails details, int progress) {
+            public void onDownloadProgress(AvailablePackage details, int progress) {
                 progressBar.setProgress(progress);
             }
         });
@@ -111,15 +136,13 @@ public class CheckUpdateActivity extends AppCompatActivity {
                             dataMetric.putFloat("temperature", 20.54f);
                             customClientData.putBundle("dataMetric", dataMetric);
                             customClientData.putCharSequence("userStatus", "registered");
-                            updateCheckHelper.requestUpdate(
-                                    new UpdateDetailsRequest.Builder()
-                                            .versionId(version.getText().toString())
-                                            .unitId("moneypenny")
-                                            .customClientData(customClientData)
+                            getDevicePackageHelper.requestDevicePackages(
+                                    new GetDevicePackagesRequest.Builder()
+                                            .unitId("monewpenny")
                                             .build()
                             );
                         } catch (Exception e) {
-                            details.setText(getString(R.string.update_check_error, e.getMessage()));
+                            details.setText(getString(R.string.get_device_packages_error, e.getMessage()));
                         }
                     }
                 }
@@ -130,7 +153,15 @@ public class CheckUpdateActivity extends AppCompatActivity {
 
                     @Override
                     public void onClick(View v) {
-                        packageDownloadHelper.requestDownload((UpdateDetails) details.getTag());
+                        for (AvailablePackage p : ((GetDevicePackagesResponse) details.getTag()).getAvailable()
+                                ) {
+                            packageDownloadHelper.requestDownload(p);
+                        }
+
+                        for (ChangedPackage p : ((GetDevicePackagesResponse) details.getTag()).getChanged()
+                                ) {
+                            packageDownloadHelper.requestDownload(p);
+                        }
                     }
                 }
         );
@@ -141,7 +172,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        updateCheckHelper.unbind(this);
+        getDevicePackageHelper.unbind(this);
         packageDownloadHelper.unbind(this);
     }
 }

@@ -22,7 +22,6 @@ import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
 import io.barracks.ota.client.GetDevicePackagesService;
-import io.barracks.ota.client.UpdateCheckService;
 import io.barracks.ota.client.api.GetDevicePackagesRequest;
 import io.barracks.ota.client.api.GetDevicePackagesResponse;
 
@@ -66,12 +65,12 @@ public class GetDevicePackagesHelper extends BroadcastReceiver {
                 if (callback.hashCode() == intent.getIntExtra(GetDevicePackagesService.EXTRA_CALLBACK, 0)) {
                     if (intent.hasCategory(GetDevicePackagesService.GET_DEVICE_PACKAGES_REQUEST_ERROR)) {
                         callback.onError(
-                                (GetDevicePackagesRequest) intent.getParcelableExtra(GetDevicePackagesService.EXTRA_CALLBACK),
+                                (GetDevicePackagesRequest) intent.getParcelableExtra(GetDevicePackagesService.EXTRA_REQUEST),
                                 (Throwable) intent.getParcelableExtra(GetDevicePackagesService.EXTRA_EXCEPTION)
                         );
                     } else if (intent.hasCategory(GetDevicePackagesService.GET_DEVICE_PACKAGES_REQUEST_RESPONSE)) {
                         callback.onResponse(
-                                (GetDevicePackagesRequest) intent.getParcelableExtra(GetDevicePackagesService.EXTRA_CALLBACK),
+                                (GetDevicePackagesRequest) intent.getParcelableExtra(GetDevicePackagesService.EXTRA_REQUEST),
                                 (GetDevicePackagesResponse) intent.getParcelableExtra(GetDevicePackagesService.EXTRA_DEVICE_PACKAGES)
                         );
                     }
@@ -109,10 +108,10 @@ public class GetDevicePackagesHelper extends BroadcastReceiver {
     public void requestDevicePackages(GetDevicePackagesRequest request) {
         Intent intent = new Intent(context, GetDevicePackagesService.class)
                 .setAction(GetDevicePackagesService.ACTION_GET)
-                .putExtra(UpdateCheckService.EXTRA_API_KEY, apiKey)
-                .putExtra(UpdateCheckService.EXTRA_URL, baseUrl)
-                .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())
-                .putExtra(UpdateCheckService.EXTRA_REQUEST, request);
+                .putExtra(GetDevicePackagesService.EXTRA_API_KEY, apiKey)
+                .putExtra(GetDevicePackagesService.EXTRA_URL, baseUrl)
+                .putExtra(GetDevicePackagesService.EXTRA_CALLBACK, callback.hashCode())
+                .putExtra(GetDevicePackagesService.EXTRA_REQUEST, request);
         context.startService(intent);
     }
 }

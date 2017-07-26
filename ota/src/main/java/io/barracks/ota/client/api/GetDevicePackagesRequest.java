@@ -46,7 +46,7 @@ public class GetDevicePackagesRequest implements Parcelable {
     /**
      * The list of package installed packages
      */
-    private final ArrayList<InstalledPackage> installedPackages;
+    private  ArrayList<InstalledPackage> installedPackages = new ArrayList<InstalledPackage>();
 
     /**
      * The unique identifier for the unit which is requesting the details.
@@ -66,7 +66,6 @@ public class GetDevicePackagesRequest implements Parcelable {
      */
     protected GetDevicePackagesRequest(Parcel in) {
         unitId = in.readString();
-        installedPackages = in.readArrayList(getClass().getClassLoader());
         in.readTypedList(installedPackages, InstalledPackage.CREATOR);
         customClientData = in.readBundle(getClass().getClassLoader());
     }
@@ -94,9 +93,9 @@ public class GetDevicePackagesRequest implements Parcelable {
 
 
     public static final class Builder {
-        private String unitId;
-        private ArrayList<InstalledPackage> installedPackages;
-        private Bundle customClientData;
+        private String unitId = null;
+        private ArrayList<InstalledPackage> installedPackages = new ArrayList<>();
+        private Bundle customClientData = null;
 
         /**
          * Builder constructor

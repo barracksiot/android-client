@@ -16,31 +16,30 @@
 
 package io.barracks.ota.client.helper;
 
+import io.barracks.ota.client.DevicePackages.AvailablePackage;
+
 /**
  * This callback interface is used when downloading a package using the {@link PackageDownloadHelper}.
  */
 public interface PackageDownloadCallback {
     /**
      * This method is called when the package has been successfully downloaded.
-     *
-     * @param details The details received from the Barracks platform.
+     *  @param availablePackage The details received from the Barracks platform.
      * @param path    The path of the downloaded file.
      */
-    void onDownloadSuccess(UpdateDetails details, String path);
+    void onDownloadSuccess(AvailablePackage availablePackage, String path);
 
     /**
      * This method is called when the download fails.
-     *
-     * @param details   The details received from the Barracks platform.
+     *  @param availablePackage   The details received from the Barracks platform.
      * @param throwable The exception caught during the download.
      */
-    void onDownloadFailure(UpdateDetails details, Throwable throwable);
+    void onDownloadFailure(AvailablePackage availablePackage, Throwable throwable);
 
     /**
      * This method is called during the download to inform the application about its progress.
-     *
-     * @param details  The details received from the Barracks platform.
+     *  @param availablePackage  The details received from the Barracks platform.
      * @param progress The percentage of progress.
      */
-    void onDownloadProgress(UpdateDetails details, int progress);
+    void onDownloadProgress(AvailablePackage availablePackage, int progress);
 }

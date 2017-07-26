@@ -20,6 +20,6 @@
     <string name="download_package">Download Package !</string>
     <string name="update_description">Update available :\n%1$s\n%2$s</string>
     <string name="update_unavailable">No update available</string>
-    <string name="update_check_error">Update check failed:\n%1$s</string>
+    <string name="get_device_packages_error">Get packages request failed:\n%1$s</string>
     <string name="version_hint">Version ID</string>
 </resources>

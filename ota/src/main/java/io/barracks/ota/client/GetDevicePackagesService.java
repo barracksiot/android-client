@@ -47,8 +47,6 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static io.barracks.ota.client.UpdateCheckService.UPDATE_REQUEST_ERROR;
-
 /**
  * Created by Paul on 17-07-26.
  */
@@ -61,7 +59,6 @@ public class GetDevicePackagesService extends IntentService implements TypeAdapt
      * @see Intent#setAction(String)
      */
     public static final String ACTION_GET = "io.barracks.ota.client.GET_DEVICE_PACKAGES";
-
 
     /**
      * This key is used to specify the {@link io.barracks.ota.client.api.GetDevicePackagesRequest} used as a reference
@@ -113,6 +110,10 @@ public class GetDevicePackagesService extends IntentService implements TypeAdapt
         ACTION_GET_FILTER = new IntentFilter(ACTION_GET);
         ACTION_GET_FILTER.addCategory(GET_DEVICE_PACKAGES_REQUEST_ERROR);
         ACTION_GET_FILTER.addCategory(GET_DEVICE_PACKAGES_REQUEST_RESPONSE);
+    }
+
+    public GetDevicePackagesService() {
+        this("io.barracks.ota.client.GetPackageService");
     }
 
     /**
@@ -172,8 +173,8 @@ public class GetDevicePackagesService extends IntentService implements TypeAdapt
                 throw new RuntimeException(response.code() + " " + response.message());
             }
         } catch (Throwable t) {
-            intent.addCategory(UPDATE_REQUEST_ERROR);
-            intent.putExtra(UpdateCheckService.EXTRA_EXCEPTION, t);
+            intent.addCategory(GET_DEVICE_PACKAGES_REQUEST_ERROR);
+            intent.putExtra(GetDevicePackagesService.EXTRA_EXCEPTION, t);
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
@@ -199,7 +200,7 @@ public class GetDevicePackagesService extends IntentService implements TypeAdapt
      * @see GetDevicePackagesService.DefaultBundleAdapter The default implementation.
      */
     private TypeAdapter<Bundle> getBundleAdapter(Gson gson) {
-        return new UpdateCheckService.DefaultBundleAdapter(gson);
+        return new GetDevicePackagesService.DefaultBundleAdapter(gson);
     }
 
     /**
@@ -217,7 +218,7 @@ public class GetDevicePackagesService extends IntentService implements TypeAdapt
      * The default {@link TypeAdapter} for the {@link Bundle}.
      *
      * @see TypeAdapterFactory#create(Gson, TypeToken)
-     * @see UpdateCheckService#getBundleAdapter(Gson)
+     * @see GetDevicePackagesService#getBundleAdapter(Gson)
      */
     public static class DefaultBundleAdapter extends TypeAdapter<Bundle> {
         /**
@@ -241,7 +242,7 @@ public class GetDevicePackagesService extends IntentService implements TypeAdapt
 
         private JsonObject bundleToJsonObject(Bundle bundle) {
             JsonObject jsonObject = new JsonObject();
-            if(bundle != null) {
+            if (bundle != null) {
                 Set<String> keys = bundle.keySet();
                 for (String key : keys) {
                     Object value = bundle.get(key);
@@ -266,7 +267,7 @@ public class GetDevicePackagesService extends IntentService implements TypeAdapt
         @Override
         public Bundle read(JsonReader in) throws IOException {
             JsonElement tree = getElementAdapter().read(in);
-            JsonObject obj = tree.isJsonObject() ? tree.getAsJsonObject(): null;
+            JsonObject obj = tree.isJsonObject() ? tree.getAsJsonObject() : null;
             Bundle bundle = new Bundle();
             if (obj != null) {
                 jsonObjectToBundle(bundle, obj);
@@ -293,8 +294,7 @@ public class GetDevicePackagesService extends IntentService implements TypeAdapt
                     } else if (primitive.isString()) {
                         bundle.putString(entry.getKey(), primitive.getAsString());
                     }
-                }
-                else {
+                } else {
                     Bundle entryBundle = new Bundle();
                     bundle.putBundle(entry.getKey(), entryBundle);
                     jsonObjectToBundle(entryBundle, (JsonObject) entry.getValue());

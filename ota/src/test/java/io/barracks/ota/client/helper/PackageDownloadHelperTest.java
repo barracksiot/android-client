@@ -30,6 +30,7 @@ import org.robolectric.annotation.Config;
 import java.io.FileNotFoundException;
 
 import io.barracks.client.ota.BuildConfig;
+import io.barracks.ota.client.DevicePackages.AvailablePackage;
 import io.barracks.ota.client.PackageDownloadService;
 import io.barracks.ota.client.Utils;
 
@@ -107,17 +108,17 @@ public class PackageDownloadHelperTest {
         boolean failure = false;
 
         @Override
-        public void onDownloadSuccess(UpdateDetails details, String path) {
+        public void onDownloadSuccess(AvailablePackage availablePackage, String path) {
             success = true;
         }
 
         @Override
-        public void onDownloadFailure(UpdateDetails details, Throwable throwable) {
+        public void onDownloadFailure(AvailablePackage availablePackage, Throwable throwable) {
             failure = true;
         }
 
         @Override
-        public void onDownloadProgress(UpdateDetails details, int progress) {
+        public void onDownloadProgress(AvailablePackage availablePackage, int progress) {
             this.progress = true;
         }
     }

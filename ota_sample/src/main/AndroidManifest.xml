@@ -34,7 +34,7 @@
         </activity>
 
         <service
-            android:name="io.barracks.ota.client.UpdateCheckService"
+            android:name="io.barracks.ota.client.GetDevicePackagesService"
             android:enabled="true"
             android:exported="false" />
         <service
