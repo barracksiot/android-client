@@ -147,15 +147,15 @@ public class PackageDownloadService extends IntentService {
     /**
      * This method is proceeding with the download and notifying the rest of the application using
      * the {@link LocalBroadcastManager}.
-     *  @param apiKey    The API key provided by the Barracks platform.
-     * @param tmpDest   The temporary path for the download.
+     * @param apiKey The API key provided by the Barracks platform.
+     * @param tmpDest The temporary path for the download.
      * @param finalDest The final path for the download.
-     * @param availablePackage    The {@link AvailablePackage} retrieved from the Barracks platform.
-     * @param callback  The callback identifier.
+     * @param availablePackage The {@link AvailablePackage} retrieved from the Barracks platform.
+     * @param callback The callback identifier.
      */
     private void downloadPackage(String apiKey, String tmpDest, String finalDest, AvailablePackage availablePackage, int callback) {
         File tmp = TextUtils.isEmpty(tmpDest) ? new File(getFilesDir(), Defaults.DEFAULT_TMP_DL_DESTINATION) : new File(tmpDest);
-        File destination = TextUtils.isEmpty(finalDest) ? new File(getFilesDir(), Defaults.DEFAULT_FINAL_DL_DESTINATION) : new File(finalDest);
+        File destination = TextUtils.isEmpty(finalDest) ? new File(getFilesDir(), availablePackage.getFilename()) : new File(finalDest);
         Retrofit retrofit = new Retrofit.Builder().baseUrl(Defaults.DEFAULT_BASE_URL).build();
         PackageDownloadApi loader = retrofit.create(PackageDownloadApi.class);
         Call<ResponseBody> call = loader.downloadPackage(availablePackage.getUrl(), apiKey);

@@ -9,6 +9,7 @@ import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
 import io.barracks.client.ota.BuildConfig;
+import io.barracks.ota.client.GetDevicePackagesService;
 import io.barracks.ota.client.Utils;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -26,7 +27,7 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 23)
-public class UpdateCheckApiTest {
+public class GetDevicePackagesApiTest {
 
     @Before
     public void setup() {
@@ -43,16 +44,16 @@ public class UpdateCheckApiTest {
                 .baseUrl(server.url(defaultPath))
                 .addConverterFactory(GsonConverterFactory.create(Utils.getRobolectricGson(new GsonBuilder())))
                 .build();
-        final UpdateCheckApi updateCheckApi = retrofit.create(UpdateCheckApi.class);
-        final Call<UpdateDetails> call = updateCheckApi.checkUpdate("deadbeef", new UpdateDetailsRequest.Builder().unitId("aaa").versionId("bbb").build());
+        final GetDevicePackagesApi getDevicePackagesApi = retrofit.create(GetDevicePackagesApi.class);
 
+        final Call<GetDevicePackagesResponse> call = getDevicePackagesApi.getDevicePackages("deadbeef", new GetDevicePackagesRequest.Builder().unitId("aaa").build());
         // When
-        Response<UpdateDetails> response = call.execute();
+        Response<GetDevicePackagesResponse> response = call.execute();
 
         // Then
         assertTrue(response.isSuccessful());
         RecordedRequest recordedRequest = server.takeRequest();
-        assertEquals(defaultPath + UpdateCheckApi.ENDPOINT, recordedRequest.getPath());
+        assertEquals(defaultPath + GetDevicePackagesApi.ENDPOINT, recordedRequest.getPath());
     }
 
 
@@ -66,15 +67,15 @@ public class UpdateCheckApiTest {
                 .baseUrl(server.url(customPath))
                 .addConverterFactory(GsonConverterFactory.create(Utils.getRobolectricGson(new GsonBuilder())))
                 .build();
-        final UpdateCheckApi updateCheckApi = retrofit.create(UpdateCheckApi.class);
-        final Call<UpdateDetails> call = updateCheckApi.checkUpdate("deadbeef", new UpdateDetailsRequest.Builder().unitId("aaa").versionId("bbb").build());
+        final GetDevicePackagesApi getDevicePackagesApi = retrofit.create(GetDevicePackagesApi.class);
+        final Call<GetDevicePackagesResponse> call = getDevicePackagesApi.getDevicePackages("deadbeef", new GetDevicePackagesRequest.Builder().unitId("aaa").build());
 
         // When
-        Response<UpdateDetails> response = call.execute();
+        Response<GetDevicePackagesResponse> response = call.execute();
 
         // Then
         assertTrue(response.isSuccessful());
         RecordedRequest recordedRequest = server.takeRequest();
-        assertEquals(customPath + UpdateCheckApi.ENDPOINT, recordedRequest.getPath());
+        assertEquals(customPath + GetDevicePackagesApi.ENDPOINT, recordedRequest.getPath());
     }
 }
