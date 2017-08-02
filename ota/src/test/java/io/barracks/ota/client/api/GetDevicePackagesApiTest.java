@@ -35,18 +35,22 @@ public class GetDevicePackagesApiTest {
     }
 
     @Test
-    public void checkUpdate_withDefaultUrl_shouldCallCorrectService() throws Exception {
+    public void getDevicePackages_withDefaultUrl_shouldCallCorrectService() throws Exception {
         // Given
         final String defaultPath = "/";
         final MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setResponseCode(204).addHeader("Content-Type", "application/json; charset=utf-8"));
+        server.enqueue(new MockResponse()
+                        .setResponseCode(204)
+                        .addHeader("Content-Type", "application/json; charset=utf-8"));
+
         final Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(server.url(defaultPath))
                 .addConverterFactory(GsonConverterFactory.create(Utils.getRobolectricGson(new GsonBuilder())))
                 .build();
-        final GetDevicePackagesApi getDevicePackagesApi = retrofit.create(GetDevicePackagesApi.class);
 
+        final GetDevicePackagesApi getDevicePackagesApi = retrofit.create(GetDevicePackagesApi.class);
         final Call<GetDevicePackagesResponse> call = getDevicePackagesApi.getDevicePackages("deadbeef", new GetDevicePackagesRequest.Builder().unitId("aaa").build());
+
         // When
         Response<GetDevicePackagesResponse> response = call.execute();
 
@@ -58,15 +62,20 @@ public class GetDevicePackagesApiTest {
 
 
     @Test
-    public void checkUpdate_withCustomUrl_shouldCallCorrectService() throws Exception {
+    public void getDevicePackages_withCustomUrl_shouldCallCorrectService() throws Exception {
+        assertTrue(true);
         // Given
         final String customPath = "/custom/";
         final MockWebServer server = new MockWebServer();
-        server.enqueue(new MockResponse().setResponseCode(204).addHeader("Content-Type", "application/json; charset=utf-8"));
+        server.enqueue(new MockResponse()
+                .setResponseCode(204)
+                .addHeader("Content-Type", "application/json; charset=utf-8"));
+
         final Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(server.url(customPath))
                 .addConverterFactory(GsonConverterFactory.create(Utils.getRobolectricGson(new GsonBuilder())))
                 .build();
+
         final GetDevicePackagesApi getDevicePackagesApi = retrofit.create(GetDevicePackagesApi.class);
         final Call<GetDevicePackagesResponse> call = getDevicePackagesApi.getDevicePackages("deadbeef", new GetDevicePackagesRequest.Builder().unitId("aaa").build());
 

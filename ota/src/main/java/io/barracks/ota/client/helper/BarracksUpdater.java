@@ -21,7 +21,7 @@ import io.barracks.ota.client.Defaults;
 /**
  * Convenient access to the various helpers.
  */
-public class BarracksHelper {
+public class BarracksUpdater {
     /**
      * The API key provided by the Barracks platform.
      */
@@ -37,7 +37,7 @@ public class BarracksHelper {
      *
      * @param apiKey The API key provided by the Barracks platform.
      */
-    public BarracksHelper(String apiKey) {
+    public BarracksUpdater(String apiKey) {
         this(apiKey, Defaults.DEFAULT_BASE_URL);
     }
 
@@ -47,7 +47,7 @@ public class BarracksHelper {
      * @param apiKey  The API key provided by the Barracks platform.
      * @param baseUrl The url used to call the Barracks platform.
      */
-    public BarracksHelper(String apiKey, String baseUrl) {
+    public BarracksUpdater(String apiKey, String baseUrl) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
     }

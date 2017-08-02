@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.barracks.ota.client.DevicePackages;
+package io.barracks.ota.client.model;
 
 import android.os.Parcel;
 
@@ -22,10 +22,7 @@ import android.os.Parcel;
  * Created by Paul on 17-07-14.
  */
 
-public class AvailablePackage extends DevicePackage {
-
-    // TODO: 17-07-14 doc
-    private String version;
+public class DownloadablePackage extends DevicePackage {
 
     /**
      * The url to call for downloading the package.
@@ -52,26 +49,20 @@ public class AvailablePackage extends DevicePackage {
      * @param size
      * @param filename
      */
-    public AvailablePackage(String reference, String version, String url, String md5, Long size, String filename) {
-        super(reference);
-        this.version = version;
+    public DownloadablePackage(String reference, String version, String url, String md5, Long size, String filename) {
+        super(reference, version);
         this.url = url;
         this.md5 = md5;
         this.size = size;
         this.filename = filename;
     }
 
-    protected AvailablePackage(Parcel in) {
+    protected DownloadablePackage(Parcel in) {
         super(in);
-        version = in.readString();
         url= in.readString();
         md5 = in.readString();
         filename = in.readString();
         size = in.readLong();
-    }
-
-    public String getVersion() {
-        return version;
     }
 
     public String getUrl() {
@@ -90,21 +81,20 @@ public class AvailablePackage extends DevicePackage {
         return filename;
     }
 
-    public static final Creator<AvailablePackage> CREATOR = new Creator<AvailablePackage>() {
+    public static final Creator<DownloadablePackage> CREATOR = new Creator<DownloadablePackage>() {
         @Override
-        public AvailablePackage createFromParcel(Parcel parcel) {
-            return new AvailablePackage(parcel);
+        public DownloadablePackage createFromParcel(Parcel parcel) {
+            return new DownloadablePackage(parcel);
         }
 
         @Override
-        public AvailablePackage[] newArray(int i) {
-            return new AvailablePackage[i];
+        public DownloadablePackage[] newArray(int i) {
+            return new DownloadablePackage[i];
         }
     };
 
     public void writeToParcel(Parcel parcel, int i) {
         super.writeToParcel(parcel, i);
-        parcel.writeString(version);
         parcel.writeString(url);
         parcel.writeString(md5);
         parcel.writeString(filename);

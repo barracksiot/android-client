@@ -25,7 +25,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.ArrayList;
+
 import io.barracks.client.ota.BuildConfig;
+import io.barracks.ota.client.model.DevicePackage;
 import io.barracks.ota.client.Utils;
 
 /**
@@ -33,68 +36,68 @@ import io.barracks.ota.client.Utils;
  */
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 23)
-public class UpdateDetailsRequestTest {
+public class GetDevicePackagesRequestTest {
     private static final String DEFAULT_UNIT_ID = "deadbeef";
-    private static final String DEFAULT_VERSION_ID = "42";
 
     @Test(expected = IllegalStateException.class)
     public void missingParameter() {
-        new UpdateDetailsRequest.Builder().build();
+        new GetDevicePackagesRequest.Builder().build();
     }
 
     @Test(expected = IllegalStateException.class)
     public void missingUnitId() {
-        new UpdateDetailsRequest.Builder()
-                .versionId(DEFAULT_VERSION_ID)
+        new GetDevicePackagesRequest.Builder()
                 .build();
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void missingVersionId() {
-        new UpdateDetailsRequest.Builder()
-                .unitId(DEFAULT_UNIT_ID)
-                .build();
-    }
 
     @Test
     public void correctRequest() {
-        UpdateDetailsRequest request;
+        GetDevicePackagesRequest request;
         Bundle customClientData = new Bundle();
         customClientData.putString("string", "toto");
-        request = new UpdateDetailsRequest.Builder()
+
+        ArrayList<DevicePackage> installedPackages = new ArrayList<>();
+        installedPackages.add(new DevicePackage("a.pkg.ref","1.0"));
+
+        request = new GetDevicePackagesRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
-                .versionId(DEFAULT_VERSION_ID)
                 .customClientData(customClientData)
+                .installedPackages(installedPackages)
                 .build();
 
         Assert.assertEquals(DEFAULT_UNIT_ID, request.getUnitId());
-        Assert.assertEquals(DEFAULT_VERSION_ID, request.getVersionId());
         Assert.assertTrue(Utils.compareBundles(customClientData, request.getCustomClientData()));
 
-        request = new UpdateDetailsRequest.Builder()
+        request = new GetDevicePackagesRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
-                .versionId(DEFAULT_VERSION_ID)
                 .build();
         Assert.assertEquals(DEFAULT_UNIT_ID, request.getUnitId());
-        Assert.assertEquals(DEFAULT_VERSION_ID, request.getVersionId());
+
+        // TODO: 17-07-31 ADD Installed packages tests
     }
 
     @Test
     public void parcel() {
         Bundle customClientData = new Bundle();
         customClientData.putString("string", "toto");
-        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
+
+        ArrayList<DevicePackage> installedPackages = new ArrayList<>();
+        installedPackages.add(new DevicePackage("a.pkg.ref","1.0"));
+
+        GetDevicePackagesRequest request = new GetDevicePackagesRequest.Builder()
                 .unitId(DEFAULT_UNIT_ID)
-                .versionId(DEFAULT_VERSION_ID)
                 .customClientData(customClientData)
+                .installedPackages(installedPackages)
                 .build();
         Parcel parcel = Parcel.obtain();
         request.writeToParcel(parcel, 0);
 
         parcel.setDataPosition(0);
-        UpdateDetailsRequest createdFromParcel = UpdateDetailsRequest.CREATOR.createFromParcel(parcel);
+        GetDevicePackagesRequest createdFromParcel = GetDevicePackagesRequest.CREATOR.createFromParcel(parcel);
         Assert.assertEquals(request.getUnitId(), createdFromParcel.getUnitId());
-        Assert.assertEquals(request.getVersionId(), createdFromParcel.getVersionId());
         Assert.assertTrue(Utils.compareBundles(customClientData, request.getCustomClientData()));
+
+        // TODO: 17-07-31 add installed packages tests
     }
 }

@@ -23,7 +23,7 @@ import android.text.TextUtils;
 
 import java.util.ArrayList;
 
-import io.barracks.ota.client.DevicePackages.InstalledPackage;
+import io.barracks.ota.client.model.DevicePackage;
 
 /**
  * Created by Paul on 17-07-17.
@@ -42,21 +42,18 @@ public class GetDevicePackagesRequest implements Parcelable {
             return new GetDevicePackagesRequest[size];
         }
     };
-
-    /**
-     * The list of package installed packages
-     */
-    private  ArrayList<InstalledPackage> installedPackages = new ArrayList<InstalledPackage>();
-
     /**
      * The unique identifier for the unit which is requesting the details.
      */
     private final String unitId;
-
     /**
      * A {@link Bundle} of user-defined customClientData.
      */
     private final Bundle customClientData;
+    /**
+     * The list of package installed packages
+     */
+    private ArrayList<DevicePackage> installedPackages;
 
     /**
      * Parcelable constructor
@@ -66,17 +63,27 @@ public class GetDevicePackagesRequest implements Parcelable {
      */
     protected GetDevicePackagesRequest(Parcel in) {
         unitId = in.readString();
-        in.readTypedList(installedPackages, InstalledPackage.CREATOR);
+        if (installedPackages != null && installedPackages.size() > 0) {
+            in.readTypedList(installedPackages, DevicePackage.CREATOR);
+        }
         customClientData = in.readBundle(getClass().getClassLoader());
     }
 
     /**
      * @see Builder
      */
-    private GetDevicePackagesRequest(ArrayList<InstalledPackage> installedPackages, String unitId, Bundle customClientData) {
+    private GetDevicePackagesRequest(ArrayList<DevicePackage> installedPackages, String unitId, Bundle customClientData) {
         this.installedPackages = installedPackages;
         this.unitId = unitId;
         this.customClientData = customClientData;
+    }
+
+    public String getUnitId() {
+        return unitId;
+    }
+
+    public Bundle getCustomClientData() {
+        return customClientData;
     }
 
     @Override
@@ -94,7 +101,7 @@ public class GetDevicePackagesRequest implements Parcelable {
 
     public static final class Builder {
         private String unitId = null;
-        private ArrayList<InstalledPackage> installedPackages = new ArrayList<>();
+        private ArrayList<DevicePackage> installedPackages = new ArrayList<>();
         private Bundle customClientData = null;
 
         /**
@@ -105,27 +112,24 @@ public class GetDevicePackagesRequest implements Parcelable {
         }
 
         /**
-         *
          * @param unitId
          * @return
          */
         public Builder unitId(String unitId) {
-            this.unitId =unitId;
+            this.unitId = unitId;
             return this;
         }
 
         /**
-         *
          * @param installedPackages
          * @return
          */
-        public Builder installedPackages(ArrayList<InstalledPackage> installedPackages) {
+        public Builder installedPackages(ArrayList<DevicePackage> installedPackages) {
             this.installedPackages = installedPackages;
             return this;
         }
 
         /**
-         *
          * @param customClientData
          * @return
          */

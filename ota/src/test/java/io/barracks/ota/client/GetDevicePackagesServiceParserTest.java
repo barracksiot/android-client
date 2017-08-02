@@ -16,12 +16,9 @@
 
 package io.barracks.ota.client;
 
-import android.os.Bundle;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
@@ -32,10 +29,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import io.barracks.client.ota.BuildConfig;
-import io.barracks.ota.client.DevicePackages.AvailablePackage;
-import io.barracks.ota.client.DevicePackages.DevicePackage;
 import io.barracks.ota.client.api.GetDevicePackagesResponse;
-import io.barracks.ota.client.api.UpdateDetailsTest;
 
 /**
  * Created by saiimons on 16-04-07.
@@ -53,10 +47,10 @@ public class GetDevicePackagesServiceParserTest {
     private void checkJsonResponse(GetDevicePackagesService service) throws IOException {
         GsonBuilder builder = service.setUpGsonBuilder(new GsonBuilder());
         Gson gson = Utils.getRobolectricGson(builder);
-        File f = new File(ClassLoader.getSystemResource("get_device_packages_reponse.json").getPath());
+        File f = new File(ClassLoader.getSystemResource("get_device_packages_response.json").getPath());
         GetDevicePackagesResponse response = gson.fromJson(new FileReader(f), GetDevicePackagesResponse.class);
 
-//        UpdateDetailsTest.assertValues(response);
+//        GetDevicePackagesResponseTest.assertValues(response);
 //        assertCustomUpdateData(response);
     }
 

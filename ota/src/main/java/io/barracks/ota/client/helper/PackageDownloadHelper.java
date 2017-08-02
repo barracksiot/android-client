@@ -21,7 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.LocalBroadcastManager;
 
-import io.barracks.ota.client.DevicePackages.AvailablePackage;
+import io.barracks.ota.client.model.DownloadablePackage;
 import io.barracks.ota.client.GetDevicePackagesService;
 import io.barracks.ota.client.PackageDownloadService;
 
@@ -56,11 +56,11 @@ public class PackageDownloadHelper extends BroadcastReceiver {
             case PackageDownloadService.ACTION_DOWNLOAD_PACKAGE:
                 if (callback.hashCode() == intent.getIntExtra(GetDevicePackagesService.EXTRA_CALLBACK, 0)) {
                     if (intent.hasCategory(PackageDownloadService.DOWNLOAD_PROGRESS)) {
-                        callback.onDownloadProgress(intent.<AvailablePackage>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), intent.getIntExtra(PackageDownloadService.EXTRA_PROGRESS, 0));
+                        callback.onDownloadProgress(intent.<DownloadablePackage>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), intent.getIntExtra(PackageDownloadService.EXTRA_PROGRESS, 0));
                     } else if (intent.hasCategory(PackageDownloadService.DOWNLOAD_SUCCESS)) {
-                        callback.onDownloadSuccess(intent.<AvailablePackage>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), intent.getStringExtra(PackageDownloadService.EXTRA_FINAL_DEST));
+                        callback.onDownloadSuccess(intent.<DownloadablePackage>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), intent.getStringExtra(PackageDownloadService.EXTRA_FINAL_DEST));
                     } else if (intent.hasCategory(PackageDownloadService.DOWNLOAD_ERROR)) {
-                        callback.onDownloadFailure(intent.<AvailablePackage>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), (Throwable) intent.getSerializableExtra(PackageDownloadService.EXTRA_EXCEPTION));
+                        callback.onDownloadFailure(intent.<DownloadablePackage>getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE), (Throwable) intent.getSerializableExtra(PackageDownloadService.EXTRA_EXCEPTION));
                     }
                 }
                 break;
@@ -97,9 +97,9 @@ public class PackageDownloadHelper extends BroadcastReceiver {
      * This method request requests the download of a package.
      *
      * @param availablePackage The details received from the Barracks platform.
-     * @see #requestDownload(AvailablePackage, String, String)
+     * @see #requestDownload(DownloadablePackage, String, String)
      */
-    public void requestDownload(AvailablePackage availablePackage) {
+    public void requestDownload(DownloadablePackage availablePackage) {
         requestDownload(availablePackage, null, null);
     }
 
@@ -110,7 +110,7 @@ public class PackageDownloadHelper extends BroadcastReceiver {
      * @param tmpFile          The temporary destination of the package.
      * @param finalFile        The final destination of the package.
      */
-    public void requestDownload(AvailablePackage availablePackage, String tmpFile, String finalFile) {
+    public void requestDownload(DownloadablePackage availablePackage, String tmpFile, String finalFile) {
         Intent intent = new Intent(context, PackageDownloadService.class)
                 .setAction(PackageDownloadService.ACTION_DOWNLOAD_PACKAGE)
                 .putExtra(PackageDownloadService.EXTRA_API_KEY, apiKey)

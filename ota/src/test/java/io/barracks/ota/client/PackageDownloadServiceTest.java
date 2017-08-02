@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 
 import io.barracks.client.ota.BuildConfig;
+import io.barracks.ota.client.model.DownloadablePackage;
 import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -57,7 +58,7 @@ public class PackageDownloadServiceTest {
     ServiceController<PackageDownloadService> controller;
     PackageDownloadService service;
     MockWebServer server;
-    UpdateDetails successResponse, failureResponse, ioErrorResponse, signatureFailResponse;
+    DownloadablePackage successResponse, failureResponse, ioErrorResponse, signatureFailResponse;
 
     @Before
     public void prepare() throws IOException, NoSuchFieldException, IllegalAccessException {
@@ -114,29 +115,25 @@ public class PackageDownloadServiceTest {
             }
         });
 
-
-        PackageInfo info = successResponse.getPackageInfo();
-        Field url = PackageInfo.class.getDeclaredField("url");
+        Field url = DownloadablePackage.class.getDeclaredField("url");
         url.setAccessible(true);
-        url.set(info, server.url("/success").toString());
+        url.set(successResponse, server.url("/success").toString());
 
-        info = failureResponse.getPackageInfo();
-        url = PackageInfo.class.getDeclaredField("url");
+        url = DownloadablePackage.class.getDeclaredField("url");
         url.setAccessible(true);
-        url.set(info, server.url("/failure").toString());
+        url.set(failureResponse, server.url("/failure").toString());
 
-        info = ioErrorResponse.getPackageInfo();
-        url = PackageInfo.class.getDeclaredField("url");
+        url = DownloadablePackage.class.getDeclaredField("url");
         url.setAccessible(true);
-        url.set(info, server.url("/ioerror").toString());
+        url.set(ioErrorResponse, server.url("/ioerror").toString());
 
-        info = signatureFailResponse.getPackageInfo();
-        url = PackageInfo.class.getDeclaredField("url");
+        url = DownloadablePackage.class.getDeclaredField("url");
         url.setAccessible(true);
-        url.set(info, server.url("/signature").toString());
-        Field md5 = PackageInfo.class.getDeclaredField("md5");
+        url.set(signatureFailResponse, server.url("/signature").toString());
+
+        Field md5 = DownloadablePackage.class.getDeclaredField("md5");
         md5.setAccessible(true);
-        md5.set(info, "md5failure");
+        md5.set(signatureFailResponse, "md5failure");
     }
 
     @After

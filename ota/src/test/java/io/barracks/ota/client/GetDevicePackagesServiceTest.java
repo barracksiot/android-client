@@ -38,6 +38,8 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import io.barracks.client.ota.BuildConfig;
+import io.barracks.ota.client.api.GetDevicePackagesRequest;
+import io.barracks.ota.client.api.GetDevicePackagesResponse;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
@@ -50,25 +52,25 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 23)
-public class UpdateCheckServiceTest {
-    ServiceController<UpdateCheckService> controller;
-    UpdateCheckService service;
+public class GetDevicePackagesServiceTest {
+    ServiceController<GetDevicePackagesService> controller;
+    GetDevicePackagesService service;
     LocalBroadcastManager manager;
 
     @Before
     public void prepare() {
         manager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
-        controller = Robolectric.buildService(UpdateCheckService.class);
+        controller = Robolectric.buildService(GetDevicePackagesService.class);
         service = controller.attach().create().get();
     }
 
     @Test
     public void callbackRan() {
         CallbackCalled testCallback = new CallbackCalled();
-        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
+        manager.registerReceiver(testCallback, GetDevicePackagesService.ACTION_GET_FILTER);
         service.onHandleIntent(
-                new Intent(UpdateCheckService.ACTION_CHECK)
-                        .putExtra(UpdateCheckService.EXTRA_API_KEY, "mandatory")
+                new Intent(GetDevicePackagesService.ACTION_GET)
+                        .putExtra(GetDevicePackagesService.EXTRA_API_KEY, "mandatory")
         );
         manager.unregisterReceiver(testCallback);
         assertTrue(testCallback.called);
@@ -77,8 +79,8 @@ public class UpdateCheckServiceTest {
     @Test
     public void missingParameters() {
         CallbackFailed testCallback = new CallbackFailed();
-        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
-        service.onHandleIntent(new Intent(UpdateCheckService.ACTION_CHECK));
+        manager.registerReceiver(testCallback, GetDevicePackagesService.ACTION_GET_FILTER);
+        service.onHandleIntent(new Intent(GetDevicePackagesService.ACTION_GET));
         manager.unregisterReceiver(testCallback);
         assertTrue(testCallback.failed);
     }
@@ -86,10 +88,10 @@ public class UpdateCheckServiceTest {
     @Test
     public void missingKey() {
         CallbackFailed testCallback = new CallbackFailed();
-        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
+        manager.registerReceiver(testCallback, GetDevicePackagesService.ACTION_GET_FILTER);
         service.onHandleIntent(
-                new Intent(UpdateCheckService.ACTION_CHECK)
-                        .putExtra(UpdateCheckService.EXTRA_REQUEST, new UpdateDetailsRequest.Builder().unitId("42").versionId("42").build())
+                new Intent(GetDevicePackagesService.ACTION_GET)
+                        .putExtra(GetDevicePackagesService.EXTRA_REQUEST, new GetDevicePackagesRequest.Builder().unitId("42").build())
         );
         manager.unregisterReceiver(testCallback);
         assertTrue(testCallback.failed);
@@ -98,10 +100,10 @@ public class UpdateCheckServiceTest {
     @Test
     public void missingRequest() {
         CallbackFailed testCallback = new CallbackFailed();
-        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
+        manager.registerReceiver(testCallback, GetDevicePackagesService.ACTION_GET_FILTER);
         service.onHandleIntent(
-                new Intent(UpdateCheckService.ACTION_CHECK)
-                        .putExtra(UpdateCheckService.EXTRA_API_KEY, "badc0fee")
+                new Intent(GetDevicePackagesService.ACTION_GET)
+                        .putExtra(GetDevicePackagesService.EXTRA_API_KEY, "badc0fee")
         );
         manager.unregisterReceiver(testCallback);
         assertTrue(testCallback.failed);
@@ -109,7 +111,7 @@ public class UpdateCheckServiceTest {
 
     @Test
     public void positiveResponse() throws IOException {
-        File f = new File(ClassLoader.getSystemResource("update_check_response_success.json").getPath());
+        File f = new File(ClassLoader.getSystemResource("get_device_packages_response.json").getPath());
         BufferedReader reader = new BufferedReader(new FileReader(f));
         StringBuilder stringBuilder = new StringBuilder();
         String line;
@@ -126,47 +128,25 @@ public class UpdateCheckServiceTest {
                         .setBody(stringBuilder.toString())
         );
 
+        server.start();
+
         CallbackSuccess testCallback = new CallbackSuccess();
-        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
-        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
+        manager.registerReceiver(testCallback, GetDevicePackagesService.ACTION_GET_FILTER);
+
+        GetDevicePackagesRequest request = new GetDevicePackagesRequest.Builder()
                 .unitId("12")
-                .versionId("v0.1")
                 .build();
+
         service.onHandleIntent(
-                new Intent(UpdateCheckService.ACTION_CHECK)
-                        .putExtra(UpdateCheckService.EXTRA_URL, server.url("/").toString())
-                        .putExtra(UpdateCheckService.EXTRA_API_KEY, "mandatory")
-                        .putExtra(UpdateCheckService.EXTRA_REQUEST, request)
+                new Intent(GetDevicePackagesService.ACTION_GET)
+                        .putExtra(GetDevicePackagesService.EXTRA_URL, server.url("/").toString())
+                        .putExtra(GetDevicePackagesService.EXTRA_API_KEY, "mandatory")
+                        .putExtra(GetDevicePackagesService.EXTRA_REQUEST, request)
         );
         manager.unregisterReceiver(testCallback);
         assertNotNull(testCallback.response);
         Assert.assertTrue(testCallback.called);
-    }
-
-    @Test
-    public void noUpdateResponse() {
-        MockWebServer server = new MockWebServer();
-        server.enqueue(
-                new MockResponse()
-                        .addHeader("Content-Type", "application/json; charset=utf-8")
-                        .addHeader("Cache-Control", "no-cache")
-                        .setStatus("HTTP/1.1 204 No content")
-        );
-        CallbackSuccess testCallback = new CallbackSuccess();
-        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
-        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
-                .unitId("12")
-                .versionId("v0.1")
-                .build();
-        service.onHandleIntent(
-                new Intent(UpdateCheckService.ACTION_CHECK)
-                        .putExtra(UpdateCheckService.EXTRA_URL, server.url("/").toString())
-                        .putExtra(UpdateCheckService.EXTRA_API_KEY, "mandatory")
-                        .putExtra(UpdateCheckService.EXTRA_REQUEST, request)
-        );
-        manager.unregisterReceiver(testCallback);
-        Assert.assertNull(testCallback.response);
-        Assert.assertTrue(testCallback.called);
+        server.shutdown();
     }
 
     @Test
@@ -179,17 +159,16 @@ public class UpdateCheckServiceTest {
                         .setResponseCode(500)
         );
         CallbackFailed testCallback = new CallbackFailed();
-        manager.registerReceiver(testCallback, UpdateCheckService.ACTION_CHECK_FILTER);
-        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
+        manager.registerReceiver(testCallback, GetDevicePackagesService.ACTION_GET_FILTER);
+        GetDevicePackagesRequest request = new GetDevicePackagesRequest.Builder()
                 .unitId("12")
-                .versionId("v0.1")
                 .build();
 
         service.onHandleIntent(
-                new Intent(UpdateCheckService.ACTION_CHECK)
-                        .putExtra(UpdateCheckService.EXTRA_URL, server.url("/").toString())
-                        .putExtra(UpdateCheckService.EXTRA_API_KEY, "mandatory")
-                        .putExtra(UpdateCheckService.EXTRA_REQUEST, request)
+                new Intent(GetDevicePackagesService.ACTION_GET)
+                        .putExtra(GetDevicePackagesService.EXTRA_URL, server.url("/").toString())
+                        .putExtra(GetDevicePackagesService.EXTRA_API_KEY, "mandatory")
+                        .putExtra(GetDevicePackagesService.EXTRA_REQUEST, request)
         );
         Assert.assertTrue(testCallback.failed);
 
@@ -206,7 +185,7 @@ public class UpdateCheckServiceTest {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(UpdateCheckService.ACTION_CHECK)) {
+            if (intent.getAction().equals(GetDevicePackagesService.ACTION_GET)) {
                 called = true;
             }
         }
@@ -218,9 +197,9 @@ public class UpdateCheckServiceTest {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (
-                    intent.getAction().equals(UpdateCheckService.ACTION_CHECK)
-                            && intent.hasCategory(UpdateCheckService.UPDATE_REQUEST_ERROR)
-                            && intent.hasExtra(UpdateCheckService.EXTRA_EXCEPTION)
+                    intent.getAction().equals(GetDevicePackagesService.ACTION_GET)
+                            && intent.hasCategory(GetDevicePackagesService.GET_DEVICE_PACKAGES_REQUEST_ERROR)
+                            && intent.hasExtra(GetDevicePackagesService.EXTRA_EXCEPTION)
                     ) {
                 failed = true;
             }
@@ -228,19 +207,16 @@ public class UpdateCheckServiceTest {
     }
 
     private static final class CallbackSuccess extends BroadcastReceiver {
-        UpdateDetails response = null;
+        GetDevicePackagesResponse response = null;
         boolean called = false;
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (
-                    intent.getAction().equals(UpdateCheckService.ACTION_CHECK) &&
-                            (
-                                    (intent.hasCategory(UpdateCheckService.UPDATE_AVAILABLE) && intent.hasExtra(UpdateCheckService.EXTRA_UPDATE_DETAILS)) ||
-                                            intent.hasCategory(UpdateCheckService.UPDATE_UNAVAILABLE)
-                            )
-                    ) {
-                response = intent.getParcelableExtra(UpdateCheckService.EXTRA_UPDATE_DETAILS);
+            if (intent.getAction().equals(GetDevicePackagesService.ACTION_GET) &&  (
+                    (intent.hasCategory(GetDevicePackagesService.GET_DEVICE_PACKAGES_REQUEST_RESPONSE) && intent.hasExtra(GetDevicePackagesService.EXTRA_DEVICE_PACKAGES)))
+                    )
+            {
+                response = intent.getParcelableExtra(GetDevicePackagesService.EXTRA_DEVICE_PACKAGES);
                 called = true;
             }
         }

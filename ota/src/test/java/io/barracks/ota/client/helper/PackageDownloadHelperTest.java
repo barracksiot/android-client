@@ -30,7 +30,7 @@ import org.robolectric.annotation.Config;
 import java.io.FileNotFoundException;
 
 import io.barracks.client.ota.BuildConfig;
-import io.barracks.ota.client.DevicePackages.AvailablePackage;
+import io.barracks.ota.client.model.DownloadablePackage;
 import io.barracks.ota.client.PackageDownloadService;
 import io.barracks.ota.client.Utils;
 
@@ -87,7 +87,7 @@ public class PackageDownloadHelperTest {
 
     @Test
     public void service() throws FileNotFoundException {
-        UpdateDetails response = Utils.getUpdateDetailsFromFile("download_success.json");
+        DownloadablePackage response = Utils.getUpdateDetailsFromFile("download_success.json");
         TestCallback callback = new TestCallback();
         PackageDownloadHelper helper = new PackageDownloadHelper("deadbeef");
         helper.bind(RuntimeEnvironment.application, callback);
@@ -97,7 +97,7 @@ public class PackageDownloadHelperTest {
         Assert.assertEquals(intent.getComponent().getClassName(), PackageDownloadService.class.getName());
         Assert.assertEquals(intent.getAction(), PackageDownloadService.ACTION_DOWNLOAD_PACKAGE);
         Assert.assertEquals(callback.hashCode(), intent.getIntExtra(PackageDownloadService.EXTRA_CALLBACK, 0));
-        UpdateDetails response2 = intent.getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE);
+        DownloadablePackage response2 = intent.getParcelableExtra(PackageDownloadService.EXTRA_AVAILABLE_PACKAGE);
         Assert.assertNotNull(response2);
         helper.unbind(RuntimeEnvironment.application);
     }
@@ -108,17 +108,17 @@ public class PackageDownloadHelperTest {
         boolean failure = false;
 
         @Override
-        public void onDownloadSuccess(AvailablePackage availablePackage, String path) {
+        public void onDownloadSuccess(DownloadablePackage availablePackage, String path) {
             success = true;
         }
 
         @Override
-        public void onDownloadFailure(AvailablePackage availablePackage, Throwable throwable) {
+        public void onDownloadFailure(DownloadablePackage availablePackage, Throwable throwable) {
             failure = true;
         }
 
         @Override
-        public void onDownloadProgress(AvailablePackage availablePackage, int progress) {
+        public void onDownloadProgress(DownloadablePackage availablePackage, int progress) {
             this.progress = true;
         }
     }

@@ -19,18 +19,18 @@ package io.barracks.ota.sample;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import io.barracks.ota.client.DevicePackages.AvailablePackage;
-import io.barracks.ota.client.DevicePackages.ChangedPackage;
-import io.barracks.ota.client.DevicePackages.DevicePackage;
+import io.barracks.ota.client.model.DownloadablePackage;
+import io.barracks.ota.client.model.DevicePackage;
 import io.barracks.ota.client.api.GetDevicePackagesRequest;
 import io.barracks.ota.client.api.GetDevicePackagesResponse;
-import io.barracks.ota.client.helper.BarracksHelper;
+import io.barracks.ota.client.helper.BarracksUpdater;
 import io.barracks.ota.client.helper.GetDevicePackagesCallback;
 import io.barracks.ota.client.helper.GetDevicePackagesHelper;
 import io.barracks.ota.client.helper.PackageDownloadCallback;
@@ -61,7 +61,7 @@ public class CheckUpdateActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        BarracksHelper helper = new BarracksHelper("747ae2efa7c0e68fa7dda312aaea2ddeb8bfcffb003c9205b509ae430760cabf", "https://app.barracks.io/");
+        BarracksUpdater helper = new BarracksUpdater("", "https://app.barracks.io/");
 
         getDevicePackageHelper = helper.getUpdateCheckHelper();
         getDevicePackageHelper.bind(this, new GetDevicePackagesCallback() {
@@ -71,22 +71,22 @@ public class CheckUpdateActivity extends AppCompatActivity {
             public void onResponse(GetDevicePackagesRequest request, GetDevicePackagesResponse response) {
 
                 String availables = "";
-                for (DevicePackage p : response.getAvailable()
+                for (DevicePackage p : response.getAvailablePackages()
                         ) {
                     availables += " " + p.getReference();
                 }
                 String unavailables = "";
-                for (DevicePackage p : response.getUnavailable()
+                for (String p : response.getUnavailablePackages()
                         ) {
-                    unavailables += " " + p.getReference();
+                    unavailables += " " + p;
                 }
                 String changed = "";
-                for (DevicePackage p : response.getChanged()
+                for (DevicePackage p : response.getChangedPackages()
                         ) {
                     changed += " " + p.getReference();
                 }
                 String unchanged = "";
-                for (DevicePackage p : response.getUnchanged()
+                for (DevicePackage p : response.getUnchangedPackages()
                         ) {
                     availables += " " + p.getReference();
                 }
@@ -110,17 +110,19 @@ public class CheckUpdateActivity extends AppCompatActivity {
         packageDownloadHelper = helper.getPackageDownloadHelper();
         packageDownloadHelper.bind(this, new PackageDownloadCallback() {
             @Override
-            public void onDownloadSuccess(AvailablePackage details, String path) {
+            public void onDownloadSuccess(DownloadablePackage details, String path) {
                 progressBar.setProgress(0);
+                Log.d(TAG, "Download success : " + path);
             }
 
             @Override
-            public void onDownloadFailure(AvailablePackage details, Throwable throwable) {
+            public void onDownloadFailure(DownloadablePackage details, Throwable throwable) {
                 progressBar.setProgress(0);
+                Log.d(TAG, "Download FAILLUR : " + throwable.getMessage());
             }
 
             @Override
-            public void onDownloadProgress(AvailablePackage details, int progress) {
+            public void onDownloadProgress(DownloadablePackage details, int progress) {
                 progressBar.setProgress(progress);
             }
         });
@@ -155,12 +157,14 @@ public class CheckUpdateActivity extends AppCompatActivity {
 
                     @Override
                     public void onClick(View v) {
-                        for (AvailablePackage p : ((GetDevicePackagesResponse) details.getTag()).getAvailable()
+                        // Download all available packages
+                        for (DownloadablePackage p : ((GetDevicePackagesResponse) details.getTag()).getAvailablePackages()
                                 ) {
                             packageDownloadHelper.requestDownload(p);
                         }
 
-                        for (ChangedPackage p : ((GetDevicePackagesResponse) details.getTag()).getChanged()
+                        // Download all changed packages
+                        for (DownloadablePackage p : ((GetDevicePackagesResponse) details.getTag()).getChangedPackages()
                                 ) {
                             packageDownloadHelper.requestDownload(p);
                         }

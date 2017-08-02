@@ -1,0 +1,23 @@
+{
+  "changed": [],
+  "available": [
+    {
+      "reference": "a.new.package",
+      "version": "version_1",
+      "url": "https://app.barracks.io/api/device/packages/a.new.package/versions/version_1/file",
+      "md5": "40a6a3a840eee36ec2a43308da52a73f",
+      "size": 895373,
+      "filename": "giphy.gif"
+    },
+    {
+      "reference": "a.package",
+      "version": "version_3",
+      "url": "https://app.barracks.io/api/device/packages/a.package/versions/version_3/file",
+      "md5": "91ed981017b39edd56bf9a111d39cfcb",
+      "size": 610297,
+      "filename": "Radiohead-Photos.jpg"
+    }
+  ],
+  "unchanged": [],
+  "unavailable": []
+}

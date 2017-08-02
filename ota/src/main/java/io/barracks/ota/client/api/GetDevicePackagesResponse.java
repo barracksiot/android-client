@@ -21,10 +21,8 @@ import android.os.Parcelable;
 
 import java.util.ArrayList;
 
-import io.barracks.ota.client.DevicePackages.AvailablePackage;
-import io.barracks.ota.client.DevicePackages.ChangedPackage;
-import io.barracks.ota.client.DevicePackages.UnavailablePackage;
-import io.barracks.ota.client.DevicePackages.UnchangedPackage;
+import io.barracks.ota.client.model.DevicePackage;
+import io.barracks.ota.client.model.DownloadablePackage;
 
 /**
  * Created by Paul on 17-07-17.
@@ -35,50 +33,49 @@ public class GetDevicePackagesResponse implements Parcelable {
     public static final Creator<GetDevicePackagesResponse> CREATOR = new Creator<GetDevicePackagesResponse>() {
         @Override
         public GetDevicePackagesResponse createFromParcel(Parcel parcel) {
-            return null;
+            return new GetDevicePackagesResponse(parcel);
         }
 
         @Override
         public GetDevicePackagesResponse[] newArray(int i) {
-            return new GetDevicePackagesResponse[0];
+            return new GetDevicePackagesResponse[i];
         }
     };
 
-    private ArrayList<AvailablePackage> available;
-    private ArrayList<ChangedPackage> changed;
-    private ArrayList<UnavailablePackage> unavailable;
-    private ArrayList<UnchangedPackage> unchanged;
+    private ArrayList<DownloadablePackage> availablePackages = new ArrayList<>();
+    private ArrayList<DownloadablePackage> changedPackages = new ArrayList<>();
+    private ArrayList<String> unavailablePackages = new ArrayList<>();
+    private ArrayList<DevicePackage> unchangedPackages = new ArrayList<>();
 
     private GetDevicePackagesResponse(Parcel in) {
-        in.readTypedList(available, AvailablePackage.CREATOR);
-        in.readTypedList(unavailable, UnavailablePackage.CREATOR);
-        in.readTypedList(changed, ChangedPackage.CREATOR);
-        in.readTypedList(unchanged, UnchangedPackage.CREATOR);
+        in.readTypedList(availablePackages, DownloadablePackage.CREATOR);
+        in.readStringList(unavailablePackages);
+        in.readTypedList(changedPackages, DownloadablePackage.CREATOR);
+        in.readTypedList(unchangedPackages, DevicePackage.CREATOR);
 
     }
 
-    public GetDevicePackagesResponse(ArrayList<AvailablePackage> available, ArrayList<ChangedPackage> changed, ArrayList<UnavailablePackage> unavailable, ArrayList<UnchangedPackage> unchanged) {
-        this.available = available;
-        this.changed = changed;
-        this.unavailable = unavailable;
-        this.unchanged = unchanged;
+    public GetDevicePackagesResponse(ArrayList<DownloadablePackage> availablePackages, ArrayList<DownloadablePackage> changedPackages, ArrayList<String> unavailablePackages, ArrayList<DevicePackage> unchangedPackages) {
+        this.availablePackages = availablePackages;
+        this.changedPackages = changedPackages;
+        this.unavailablePackages = unavailablePackages;
+        this.unchangedPackages = unchangedPackages;
     }
 
-
-    public ArrayList<AvailablePackage> getAvailable() {
-        return available;
+    public ArrayList<DownloadablePackage> getAvailablePackages() {
+        return availablePackages;
     }
 
-    public ArrayList<ChangedPackage> getChanged() {
-        return changed;
+    public ArrayList<DownloadablePackage> getChangedPackages() {
+        return changedPackages;
     }
 
-    public ArrayList<UnavailablePackage> getUnavailable() {
-        return unavailable;
+    public ArrayList<String> getUnavailablePackages() {
+        return unavailablePackages;
     }
 
-    public ArrayList<UnchangedPackage> getUnchanged() {
-        return unchanged;
+    public ArrayList<DevicePackage> getUnchangedPackages() {
+        return unchangedPackages;
     }
 
     @Override

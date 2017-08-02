@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package io.barracks.ota.client.DevicePackages;
+package io.barracks.ota.client.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -23,23 +23,47 @@ import android.os.Parcelable;
  * Created by Paul on 17-07-14.
  */
 
-public abstract class DevicePackage implements Parcelable{
+public class DevicePackage implements Parcelable{
+
+    public static Creator<DevicePackage> CREATOR = new Creator<DevicePackage>() {
+        @Override
+        public DevicePackage createFromParcel(Parcel parcel) {
+            return new DevicePackage(parcel);
+        }
+
+        @Override
+        public DevicePackage[] newArray(int i) {
+            return new DevicePackage[i];
+        }
+    };
+
 
     /**
      *
      */
     private String reference;
 
-    protected DevicePackage(String reference) {
+    /**
+     *
+     */
+    private String version;
+
+    public DevicePackage(String reference, String version) {
         this.reference = reference;
+        this.version = version;
     }
 
     protected DevicePackage(Parcel in) {
         reference = in.readString();
+        version = in.readString();
     }
 
     public String getReference() {
         return reference;
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     @Override

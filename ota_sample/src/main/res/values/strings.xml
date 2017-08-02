@@ -18,8 +18,8 @@
     <string name="app_name">OTA Sample</string>
     <string name="check_update">Check Update !</string>
     <string name="download_package">Download Package !</string>
-    <string name="update_description">Update available :\n%1$s\n%2$s</string>
-    <string name="update_unavailable">No update available</string>
+    <string name="update_description">Update availablePackages :\n%1$s\n%2$s</string>
+    <string name="update_unavailable">No update availablePackages</string>
     <string name="get_device_packages_error">Get packages request failed:\n%1$s</string>
     <string name="unit_id_hint">Unit ID</string>
 </resources>

@@ -28,51 +28,53 @@ import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 import io.barracks.client.ota.BuildConfig;
-import io.barracks.ota.client.UpdateCheckService;
+import io.barracks.ota.client.GetDevicePackagesService;
+import io.barracks.ota.client.api.GetDevicePackagesRequest;
+import io.barracks.ota.client.api.GetDevicePackagesResponse;
 
 /**
  * Created by saiimons on 16-04-07.
  */
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 23)
-public class UpdateCheckHelperTest {
+public class GetDevicePackagesHelperTest {
     @Test
     public void calls() {
         TestCallback callback;
 
-        UpdateCheckHelper helper = new UpdateCheckHelper("deadbeef");
+        GetDevicePackagesHelper helper = new GetDevicePackagesHelper("deadbeef");
         LocalBroadcastManager manager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
 
         callback = new TestCallback();
         helper.bind(RuntimeEnvironment.application, callback);
         manager.sendBroadcast(
-                new Intent(UpdateCheckService.ACTION_CHECK)
-                        .addCategory(UpdateCheckService.UPDATE_AVAILABLE)
-                        .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())
+                new Intent(GetDevicePackagesService.ACTION_GET)
+                        .addCategory(GetDevicePackagesService.GET_DEVICE_PACKAGES_REQUEST_RESPONSE)
+                        .putExtra(GetDevicePackagesService.EXTRA_CALLBACK, callback.hashCode())
         );
         Assert.assertTrue(callback.available);
         Assert.assertFalse(callback.unavailable);
         Assert.assertFalse(callback.error);
         helper.unbind(RuntimeEnvironment.application);
 
-        callback = new TestCallback();
-        helper.bind(RuntimeEnvironment.application, callback);
-        manager.sendBroadcast(
-                new Intent(UpdateCheckService.ACTION_CHECK)
-                        .addCategory(UpdateCheckService.UPDATE_UNAVAILABLE)
-                        .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())
-        );
-        Assert.assertTrue(callback.unavailable);
-        Assert.assertFalse(callback.available);
-        Assert.assertFalse(callback.error);
-        helper.unbind(RuntimeEnvironment.application);
+//        callback = new TestCallback();
+//        helper.bind(RuntimeEnvironment.application, callback);
+//        manager.sendBroadcast(
+//                new Intent(GetDevicePackagesService.ACTION_GET)
+//                        .addCategory(GetDevicePackagesService.UPDATE_UNAVAILABLE)
+//                        .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())
+//        );
+//        Assert.assertTrue(callback.unavailable);
+//        Assert.assertFalse(callback.available);
+//        Assert.assertFalse(callback.error);
+//        helper.unbind(RuntimeEnvironment.application);
 
         callback = new TestCallback();
         helper.bind(RuntimeEnvironment.application, callback);
         manager.sendBroadcast(
-                new Intent(UpdateCheckService.ACTION_CHECK)
-                        .addCategory(UpdateCheckService.UPDATE_REQUEST_ERROR)
-                        .putExtra(UpdateCheckService.EXTRA_CALLBACK, callback.hashCode())
+                new Intent(GetDevicePackagesService.ACTION_GET)
+                        .addCategory(GetDevicePackagesService.GET_DEVICE_PACKAGES_REQUEST_ERROR)
+                        .putExtra(GetDevicePackagesService.EXTRA_CALLBACK, callback.hashCode())
         );
         Assert.assertTrue(callback.error);
         Assert.assertFalse(callback.available);
@@ -82,41 +84,35 @@ public class UpdateCheckHelperTest {
 
     @Test
     public void service() {
-        UpdateDetailsRequest request = new UpdateDetailsRequest.Builder()
+        GetDevicePackagesRequest request = new GetDevicePackagesRequest.Builder()
                 .unitId("HAL")
-                .versionId("42")
                 .build();
         TestCallback callback = new TestCallback();
-        UpdateCheckHelper helper = new UpdateCheckHelper("deadbeef");
+        GetDevicePackagesHelper helper = new GetDevicePackagesHelper("deadbeef");
         helper.bind(RuntimeEnvironment.application, callback);
-        helper.requestUpdate(request);
+        helper.requestDevicePackages(request);
         Intent intent = Shadows.shadowOf(RuntimeEnvironment.application).getNextStartedService();
         Assert.assertNotNull(intent);
-        Assert.assertEquals(intent.getComponent().getClassName(), UpdateCheckService.class.getName());
-        Assert.assertEquals(intent.getAction(), UpdateCheckService.ACTION_CHECK);
-        Assert.assertEquals(callback.hashCode(), intent.getIntExtra(UpdateCheckService.EXTRA_CALLBACK, 0));
-        UpdateDetailsRequest request2 = intent.getParcelableExtra(UpdateCheckService.EXTRA_REQUEST);
+        Assert.assertEquals(intent.getComponent().getClassName(), GetDevicePackagesService.class.getName());
+        Assert.assertEquals(intent.getAction(), GetDevicePackagesService.ACTION_GET);
+        Assert.assertEquals(callback.hashCode(), intent.getIntExtra(GetDevicePackagesService.EXTRA_CALLBACK, 0));
+        GetDevicePackagesRequest request2 = intent.getParcelableExtra(GetDevicePackagesService.EXTRA_REQUEST);
         Assert.assertNotNull(request2);
         helper.unbind(RuntimeEnvironment.application);
     }
 
-    private static final class TestCallback implements UpdateCheckCallback {
+    private static final class TestCallback implements GetDevicePackagesCallback {
         boolean available = false;
         boolean unavailable = false;
         boolean error = false;
 
         @Override
-        public void onUpdateAvailable(UpdateDetailsRequest request, UpdateDetails details) {
+        public void onResponse(GetDevicePackagesRequest request, GetDevicePackagesResponse response) {
             available = true;
         }
 
         @Override
-        public void onUpdateUnavailable(UpdateDetailsRequest request) {
-            unavailable = true;
-        }
-
-        @Override
-        public void onUpdateRequestError(UpdateDetailsRequest request, Throwable t) {
+        public void onError(GetDevicePackagesRequest request, Throwable t) {
             error = true;
         }
     }
